@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ocr-service
+  labels:
+    app: ocr-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ocr-service
+  template:
+    metadata:
+      labels:
+        app: ocr-service
+    spec:
+      containers:
+        - name: ocr-service
+          image: scan-n-eat/ocr-service:latest
+          imagePullPolicy: IfNotPresent # Important for local dev/minikube usage
+          ports:
+            - containerPort: 5000
+
+          # --- RESILIENCE & HEALTH CHECKS ---
+          # Readiness: Is the app ready to serve traffic? (Flask started?)
+          # Since we don't have a specific /health endpoint, TCP check on 5000 is a basic proxy
+          # for "is the web server process listening".
+          readinessProbe:
+            tcpSocket:
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+          # Liveness: Is the container dead/deadlocked?
+          livenessProbe:
+            tcpSocket:
+              port: 5000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+
+          # --- RESOURCES ---
+          # Guarantees and Limits to prevent OOM kills or CPU starvation
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "200m"
+            limits:
+              memory: "1024Mi" # OCR can be memory intensive
+              cpu: "1000m"

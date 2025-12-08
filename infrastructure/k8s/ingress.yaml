@@ -1,0 +1,69 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: scan-n-eat-gateway
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    # Rewrite Target:
+    # Captures the group (.*) in the path and passes it to the backend.
+    # e.g. /api/v1/ocr/scan -> /scan
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    # Optional: Enable SSL redirection (requires TLS config)
+    # nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  rules:
+    - http:
+        paths:
+          # --- OCR SERVICE ---
+          - path: /api/v1/ocr(/|$)(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: ocr-service
+                port:
+                  number: 5000
+
+          # --- AUTH SERVICE ---
+          - path: /api/v1/auth(/|$)(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: auth-service
+                port:
+                  number: 80
+
+          # --- INGREDIENT SERVICE ---
+          - path: /api/v1/ingredients(/|$)(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: ingredient-service
+                port:
+                  number: 80
+
+          # --- RECIPE SERVICE ---
+          - path: /api/v1/recipes(/|$)(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: recipe-service
+                port:
+                  number: 80
+
+          # --- INVENTORY SERVICE ---
+          - path: /api/v1/inventory(/|$)(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: inventory-service
+                port:
+                  number: 80
+
+          # --- ORDER SERVICE ---
+          - path: /api/v1/orders(/|$)(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: order-service
+                port:
+                  number: 80
