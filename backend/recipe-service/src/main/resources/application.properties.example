@@ -4,7 +4,7 @@ server.port=8082
 # Database Configuration
 spring.datasource.url=jdbc:postgresql://localhost:5432/recipe_db
 spring.datasource.username=postgres
-spring.datasource.password=password_here
+spring.datasource.password=your_password_here
 spring.datasource.driver-class-name=org.postgresql.Driver
 
 # JPA Configuration
