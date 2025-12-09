@@ -1,0 +1,81 @@
+version: "3.8"
+
+services:
+  # --- INFRASTRUCTURE ---
+
+  postgres:
+    build: ./backend/database
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgres
+      # init.sql creates the sub-dbs: auth_db, ingredient_db, etc.
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - scan-n-eat-net
+
+  gateway:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./infrastructure/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - ocr-service
+      - ingredients-service
+      - recipe-service
+    networks:
+      - scan-n-eat-net
+
+  # --- MICROSERVICES ---
+
+  ocr-service:
+    build: ./backend/ocr-service
+    ports:
+      - "5001:5000" # Expose on 5001 explicitly if needed, but Gateway uses internal dns
+    environment:
+      FLASK_ENV: development
+    networks:
+      - scan-n-eat-net
+
+  ingredients-service:
+    build: ./backend/ingredients-service
+    environment:
+      SERVER_PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ingredient_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    depends_on:
+      - postgres
+    networks:
+      - scan-n-eat-net
+
+  recipe-service:
+    build: ./backend/recipe-service
+    environment:
+      SERVER_PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/recipe_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    depends_on:
+      - postgres
+    networks:
+      - scan-n-eat-net
+
+  # --- PLACEHOLDERS FOR MISSING SERVICES ---
+  # These are defined so Nginx doesn't crash on startup if it tries to resolve them aggressively.
+  # However, Nginx usually allows upstream to be down.
+  # If Docker Compose complains about missing build context, comment these out or create empty dirs.
+  # For now, we assume user might want to add them later.
+
+volumes:
+  postgres_data:
+
+networks:
+  scan-n-eat-net:
+    driver: bridge
