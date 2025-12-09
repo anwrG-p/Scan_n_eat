@@ -1,13 +1,1 @@
-C:\Users\faouz\Documents\testing on the project\Scan_n_eat\backend\auth-service\auth-service\src\main\java\com\scan_neat\auth_service\dto\AuthResponse.java
-C:\Users\faouz\Documents\testing on the project\Scan_n_eat\backend\auth-service\auth-service\src\main\java\com\scan_neat\auth_service\dto\LoginRequest.java
-C:\Users\faouz\Documents\testing on the project\Scan_n_eat\backend\auth-service\auth-service\src\main\java\com\scan_neat\auth_service\model\User.java
-C:\Users\faouz\Documents\testing on the project\Scan_n_eat\backend\auth-service\auth-service\src\main\java\com\scan_neat\auth_service\model\Role.java
-C:\Users\faouz\Documents\testing on the project\Scan_n_eat\backend\auth-service\auth-service\src\main\java\com\scan_neat\auth_service\security\SecurityConfig.java
-C:\Users\faouz\Documents\testing on the project\Scan_n_eat\backend\auth-service\auth-service\src\main\java\com\scan_neat\auth_service\service\AuthService.java
-C:\Users\faouz\Documents\testing on the project\Scan_n_eat\backend\auth-service\auth-service\src\main\java\com\scan_neat\auth_service\config\ApplicationConfig.java
-C:\Users\faouz\Documents\testing on the project\Scan_n_eat\backend\auth-service\auth-service\src\main\java\com\scan_neat\auth_service\repository\UserRepository.java
-C:\Users\faouz\Documents\testing on the project\Scan_n_eat\backend\auth-service\auth-service\src\main\java\com\scan_neat\auth_service\controller\AuthController.java
-C:\Users\faouz\Documents\testing on the project\Scan_n_eat\backend\auth-service\auth-service\src\main\java\com\scan_neat\auth_service\security\JwtService.java
-C:\Users\faouz\Documents\testing on the project\Scan_n_eat\backend\auth-service\auth-service\src\main\java\com\scan_neat\auth_service\AuthServiceApplication.java
-C:\Users\faouz\Documents\testing on the project\Scan_n_eat\backend\auth-service\auth-service\src\main\java\com\scan_neat\auth_service\security\JwtAuthenticationFilter.java
-C:\Users\faouz\Documents\testing on the project\Scan_n_eat\backend\auth-service\auth-service\src\main\java\com\scan_neat\auth_service\dto\RegisterRequest.java
+
