@@ -6,8 +6,10 @@ export interface User {
 }
 
 export interface AuthResponse {
-    user: User;
-    access_token: string;
+    token: string;
+    username: string;
+    role: 'USER' | 'ADMIN'; // Match Java Enum string values
+    userId: string;
 }
 
 export interface Ingredient {

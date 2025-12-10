@@ -1,11 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { useIngredientsStore } from '../store/ingredientsStore';
+import { useInventoryStore } from '../store/inventoryStore';
 import { Plus, Trash2, Calendar, Scale, Package } from 'lucide-react';
 
 export const IngredientsPage: React.FC = () => {
-    const { scannedIngredients, removeIngredient, clearIngredients, /* addIngredient should be exposed from store if we want to use it properly, mocking valid one here or assume store update needed */ } = useIngredientsStore();
+    // Global Catalog (for looking up IDs)
+    const { scannedIngredients, fetchIngredients } = useIngredientsStore();
+    
+    // User Inventory
+    const { inventory, fetchInventory, addToInventory, removeFromInventory } = useInventoryStore();
+
+    useEffect(() => {
+        fetchIngredients();
+        fetchInventory();
+    }, [fetchIngredients, fetchInventory]);
 
     // Local state for the form
     const [name, setName] = useState('');
@@ -13,15 +23,35 @@ export const IngredientsPage: React.FC = () => {
     const [unit, setUnit] = useState('grams');
     const [expiry, setExpiry] = useState('');
 
-    const handleAdd = (e: React.FormEvent) => {
+    const handleAdd = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Since the store might not expose addIngredient directly in this context (checking previous store file needed),
-        // we'll simulate adding or use a mock function if the store isn't updated to support manual add yet.
-        // Ideally we update the store. For now, let's assume we can push to the list or log it.
-        console.log("Adding ingredient:", { name, quantity, unit, expiry });
-        alert("Ingredient added! (Mock - Connect to store add function)");
+        
+        // Simple lookup for Ingredient ID based on name
+        // In a real app, use a proper Search/Dropdown
+        const foundIngredient = scannedIngredients.find(ing => ing.name.toLowerCase() === name.toLowerCase());
+        
+        if (!foundIngredient) {
+            alert(`Ingredient '${name}' not found in catalog. Please check spelling or choose from global list.`);
+            return;
+        }
+
+        // We use a mock ID if the catalog doesn't expose ID yet (it should, check types)
+        // types/index.ts shows Ingredient interface doesn't have ID!
+        // We will mock ID as 1 for now if missing, or we need to fix Ingredient type.
+        // Assuming backend returns it but frontend type misses it.
+        const ingredientId = (foundIngredient as any).id || 1; 
+
+        await addToInventory({
+            ingredientId: ingredientId,
+            name: name,
+            quantity: parseFloat(quantity),
+            unit: unit,
+            expirationDate: expiry || undefined
+        });
+
         setName('');
         setQuantity('');
+        setExpiry('');
     };
 
     return (
@@ -31,11 +61,6 @@ export const IngredientsPage: React.FC = () => {
                     <h1 className="text-3xl font-extrabold text-gray-900">My Pantry</h1>
                     <p className="text-gray-500 mt-1">Manage your available ingredients.</p>
                 </div>
-                {scannedIngredients.length > 0 && (
-                    <Button variant="danger" onClick={clearIngredients}>
-                        Clear All
-                    </Button>
-                )}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -57,17 +82,8 @@ export const IngredientsPage: React.FC = () => {
                                     placeholder="e.g. Tomato Sauce"
                                     required
                                 />
+                                <p className="text-xs text-gray-500 mt-1">Must match catalog name (case-insensitive)</p>
                             </div>
-                            <button
-                                onClick={() => removeIngredient("TEMP_ID", index)}
-                                className="text-red-500 hover:text-red-700 p-2"
-                            >
-                                <Trash2 className="w-4 h-4" />
-                            </button>
-                        </Card>
-                    ))
-                )}
-            </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
@@ -127,11 +143,11 @@ export const IngredientsPage: React.FC = () => {
                             Current Inventory
                         </h2>
 
-                        {scannedIngredients.length === 0 ? (
+                        {inventory.length === 0 ? (
                             <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">
                                 <Package className="w-12 h-12 mx-auto text-gray-300 mb-3" />
                                 <p className="text-gray-500 font-medium">Your pantry is empty</p>
-                                <p className="text-sm text-gray-400 mt-1">Add ingredients manually or scan a receipt</p>
+                                <p className="text-sm text-gray-400 mt-1">Add ingredients manually</p>
                             </div>
                         ) : (
                             <div className="overflow-x-auto">
@@ -145,20 +161,20 @@ export const IngredientsPage: React.FC = () => {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100">
-                                        {scannedIngredients.map((ing, index) => (
-                                            <tr key={index} className="group hover:bg-gray-50 transition-colors">
-                                                <td className="py-3 px-4 font-medium text-gray-900">{ing.name}</td>
+                                        {inventory.map((ing) => (
+                                            <tr key={ing.id} className="group hover:bg-gray-50 transition-colors">
+                                                <td className="py-3 px-4 font-medium text-gray-900">{ing.name || `Item ${ing.ingredientId}`}</td>
                                                 <td className="py-3 px-4 text-gray-600">
                                                     <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-bold">
                                                         {ing.quantity} {ing.unit}
                                                     </span>
                                                 </td>
                                                 <td className="py-3 px-4 text-gray-500 text-sm">
-                                                    {ing.expiry || 'N/A'}
+                                                    {ing.expirationDate || 'N/A'}
                                                 </td>
                                                 <td className="py-3 px-4 text-right">
                                                     <button
-                                                        onClick={() => removeIngredient(index)}
+                                                        onClick={() => ing.id && removeFromInventory(ing.id)}
                                                         className="text-gray-400 hover:text-red-500 p-2 rounded-full hover:bg-red-50 transition-colors"
                                                     >
                                                         <Trash2 className="w-4 h-4" />

@@ -14,4 +14,5 @@ public class AuthResponse {
     private String token;
     private String username;
     private Role role;
+    private java.util.UUID userId;
 }

@@ -9,11 +9,15 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: postgres
-      # init.sql creates the sub-dbs: auth_db, ingredient_db, etc.
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - scan-n-eat-net
 
@@ -47,7 +51,7 @@ services:
   ocr-service:
     build: ./backend/ocr-service
     ports:
-      - "5001:5000" # Expose on 5001 explicitly if needed, but Gateway uses internal dns
+      - "5001:5000"
     environment:
       FLASK_ENV: development
     networks:
@@ -62,7 +66,8 @@ services:
       SPRING_DATASOURCE_PASSWORD: password
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - scan-n-eat-net
 
@@ -75,7 +80,8 @@ services:
       SPRING_DATASOURCE_PASSWORD: password
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - scan-n-eat-net
 
@@ -88,7 +94,22 @@ services:
       SPRING_DATASOURCE_PASSWORD: password
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+    networks:
+      - scan-n-eat-net
+
+  inventory-service:
+    build: ./backend/inventory-service
+    environment:
+      SERVER_PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/inventory_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - scan-n-eat-net
 

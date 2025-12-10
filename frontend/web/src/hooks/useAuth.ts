@@ -16,7 +16,15 @@ export const useAuth = () => {
         username: email, // Backend expects username
         password,
       });
-      setAuth(data.user, data.access_token);
+      
+      const user = {
+        id: data.userId,
+        name: data.username,
+        email: data.username, // Since we use email as username
+        role: data.role.toLowerCase() as 'user' | 'admin'
+      };
+      
+      setAuth(user, data.token);
       return true;
     } catch (err: any) {
       setError(err.response?.data?.message || "Login failed");
