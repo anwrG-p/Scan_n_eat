@@ -58,6 +58,16 @@ export const IngredientsPage: React.FC = () => {
                                     required
                                 />
                             </div>
+                            <button
+                                onClick={() => removeIngredient("TEMP_ID", index)}
+                                className="text-red-500 hover:text-red-700 p-2"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                            </button>
+                        </Card>
+                    ))
+                )}
+            </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
