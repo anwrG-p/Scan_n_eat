@@ -17,6 +17,16 @@ services:
     networks:
       - scan-n-eat-net
 
+  frontend-service:
+    build:
+      context: ./frontend/web
+      args:
+        VITE_API_URL: /api/v1
+    ports:
+      - "5173:80"
+    networks:
+      - scan-n-eat-net
+
   gateway:
     image: nginx:alpine
     ports:
@@ -25,8 +35,10 @@ services:
       - ./infrastructure/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - ocr-service
+      - auth-service
       - ingredients-service
       - recipe-service
+      - frontend-service
     networks:
       - scan-n-eat-net
 

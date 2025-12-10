@@ -5,7 +5,12 @@ import { useIngredientsStore } from '../store/ingredientsStore';
 import { Plus, Trash2 } from 'lucide-react';
 
 export const IngredientsPage: React.FC = () => {
-    const { scannedIngredients, removeIngredient, clearIngredients } = useIngredientsStore();
+    const { scannedIngredients, removeIngredient, clearIngredients, fetchIngredients } = useIngredientsStore();
+
+    React.useEffect(() => {
+        fetchIngredients();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return (
         <div className="space-y-6">
@@ -32,7 +37,7 @@ export const IngredientsPage: React.FC = () => {
                                 <p className="text-sm text-gray-500">{ing.quantity} {ing.unit}</p>
                             </div>
                             <button
-                                onClick={() => removeIngredient(index)}
+                                onClick={() => removeIngredient("TEMP_ID", index)}
                                 className="text-red-500 hover:text-red-700 p-2"
                             >
                                 <Trash2 className="w-4 h-4" />

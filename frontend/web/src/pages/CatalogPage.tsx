@@ -5,26 +5,12 @@ import { Search } from 'lucide-react';
 
 
 export const CatalogPage: React.FC = () => {
-    const { dishes, isLoading, error } = useCatalogStore();
+    const { dishes, isLoading, error, fetchDishes } = useCatalogStore();
     const [searchQuery, setSearchQuery] = React.useState('');
 
     useEffect(() => {
-        // Only fetch if empty or on mount logic
-        // For now always fetch to ensure fresh data
-        if (dishes.length === 0) {
-            // Mock fetch until backend is ready
-            // fetchDishes(); 
-
-            // Manually seeding for demo
-            useCatalogStore.setState({
-                dishes: [
-                    { id: '1', name: 'Spaghetti Carbonara', description: 'Classic Italian pasta with egg, cheese, pancetta, and black pepper.', price: 12.99, image_url: 'https://images.unsplash.com/photo-1612874742237-6526221588e3?auto=format&fit=crop&w=400&q=80', ingredients: ['Spaghetti', 'Eggs', 'Pancetta', 'Parmesan'], category: 'Pasta' },
-                    { id: '2', name: 'Margherita Pizza', description: 'Simple and delicious pizza with tomato, mozzarella, and basil.', price: 10.50, image_url: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=400&q=80', ingredients: ['Dough', 'Tomato Sauce', 'Mozzarella', 'Basil'], category: 'Pizza' },
-                    { id: '3', name: 'Caesar Salad', description: 'Crisp romaine lettuce with croutons, parmesan, and caesar dressing.', price: 8.99, image_url: 'https://images.unsplash.com/photo-1550304943-4f24f54ddde9?auto=format&fit=crop&w=400&q=80', ingredients: ['Romaine', 'Croutons', 'Parmesan', 'Caesar Dressing'], category: 'Salad' },
-                ],
-                isLoading: false
-            });
-        }
+        fetchDishes();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const filteredDishes = dishes.filter(dish =>
