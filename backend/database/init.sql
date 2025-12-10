@@ -46,10 +46,8 @@ CREATE TABLE users (
 
 COMMENT ON TABLE users IS 'Service: auth-service. Stores user credentials and roles.';
 
--- Seed Admin User
-INSERT INTO users (username, password_hash, role)
-VALUES ('admin@scanneat.com', '$2a$10$B/zC0oWs/sgS3nDhDrKgPuy6cWBRo0SioJAebpw2FV2EG55Ay3Bjhi', 'ADMIN')
-ON CONFLICT (username) DO NOTHING;
+-- Admin user is automatically created by auth-service on startup
+-- Default credentials: admin@scanneat.com / admin123
 
 
 -- ------------------------------------------

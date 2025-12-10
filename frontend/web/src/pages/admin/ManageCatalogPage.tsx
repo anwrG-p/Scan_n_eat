@@ -4,18 +4,41 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Edit, Trash2, Plus } from 'lucide-react';
 
+import { apiClient } from '../../api/client';
+
 export const ManageCatalogPage: React.FC = () => {
     const { dishes } = useCatalogStore();
     // TODO: Add addDish, updateDish, deleteDish to store
     const [showForm, setShowForm] = useState(false);
+    const [isPopulating, setIsPopulating] = useState(false);
+
+    const handlePopulate = async () => {
+        if (!window.confirm("This will fetch recipes from the external API. Continue?")) return;
+        setIsPopulating(true);
+        try {
+            await apiClient.post('/recipes/populate');
+            alert('Catalog populated successfully!');
+            // TODO: Refresh catalog
+        } catch (error) {
+            console.error('Failed to populate:', error);
+            alert('Failed to populate catalog.');
+        } finally {
+            setIsPopulating(false);
+        }
+    };
 
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold text-gray-900">Manage Catalog</h1>
-                <Button onClick={() => setShowForm(!showForm)}>
-                    <Plus className="w-4 h-4 mr-2" /> Add New Dish
-                </Button>
+                <div className="space-x-2">
+                    <Button variant="secondary" onClick={handlePopulate} disabled={isPopulating}>
+                        {isPopulating ? 'Populating...' : 'Populate Catalog'}
+                    </Button>
+                    <Button onClick={() => setShowForm(!showForm)}>
+                        <Plus className="w-4 h-4 mr-2" /> Add New Dish
+                    </Button>
+                </div>
             </div>
 
             {showForm && (

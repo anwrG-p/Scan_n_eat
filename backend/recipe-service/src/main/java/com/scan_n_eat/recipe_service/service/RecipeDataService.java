@@ -82,11 +82,20 @@ public class RecipeDataService {
                     String ingredient = (String) meal.get(ingredientKey);
 
                     if (ingredient != null && !ingredient.trim().isEmpty()) {
-                        // For now, we'll use a simple hash of the ingredient name as ID
-                        // In production, you'd lookup the actual ingredient ID from ingredient service
-                        int ingredientId = Math.abs(ingredient.hashCode()) % 1000;
-                        RecipeIngredient recipeIngredient = new RecipeIngredient(recipe, ingredientId);
-                        recipe.addIngredient(recipeIngredient);
+                        try {
+                            // Call ingredients-service to sync and get ID
+                            // Using the internal docker service name
+                            String syncUrl = "http://ingredients-service:8080/api/ingredients/sync?name=" + ingredient;
+                            Map<String, Object> ingredientResp = restTemplate.postForObject(syncUrl, null, Map.class);
+
+                            if (ingredientResp != null && ingredientResp.containsKey("id")) {
+                                Integer ingredientId = ((Number) ingredientResp.get("id")).intValue();
+                                RecipeIngredient recipeIngredient = new RecipeIngredient(recipe, ingredientId);
+                                recipe.addIngredient(recipeIngredient);
+                            }
+                        } catch (Exception ex) {
+                            System.err.println("Failed to sync ingredient: " + ingredient + " - " + ex.getMessage());
+                        }
                     }
                 }
 

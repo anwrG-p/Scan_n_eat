@@ -9,4 +9,6 @@ public interface IngredientService {
     List<IngredientDto> getAllIngredients();
 
     IngredientDto getIngredientById(Long id);
+
+    IngredientDto syncIngredient(String name);
 }

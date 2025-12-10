@@ -45,4 +45,18 @@ public class IngredientServiceImpl implements IngredientService {
 
         return new IngredientDto(i.getId(), i.getName(), i.getCalories());
     }
+
+    @Override
+    public IngredientDto syncIngredient(String name) {
+        return repository.findByNameIgnoreCase(name)
+                .map(i -> new IngredientDto(i.getId(), i.getName(), i.getCalories()))
+                .orElseGet(() -> {
+                    Ingredient i = Ingredient.builder()
+                            .name(name)
+                            .calories(0.0) // Default
+                            .build();
+                    Ingredient saved = repository.save(i);
+                    return new IngredientDto(saved.getId(), saved.getName(), saved.getCalories());
+                });
+    }
 }

@@ -28,4 +28,9 @@ public class IngredientController {
     public IngredientDto getById(@PathVariable Long id) {
         return service.getIngredientById(id);
     }
+
+    @PostMapping("/sync")
+    public IngredientDto sync(@RequestParam String name) {
+        return service.syncIngredient(name);
+    }
 }

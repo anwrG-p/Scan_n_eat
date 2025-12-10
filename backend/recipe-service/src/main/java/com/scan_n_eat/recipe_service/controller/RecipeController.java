@@ -3,7 +3,7 @@ package com.scan_n_eat.recipe_service.controller;
 import com.scan_n_eat.recipe_service.dto.RecipeDTO;
 import com.scan_n_eat.recipe_service.service.RecipeService;
 
-import main.java.com.scan_n_eat.recipe_service.service.RecipeDataService;
+import com.scan_n_eat.recipe_service.service.RecipeDataService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
