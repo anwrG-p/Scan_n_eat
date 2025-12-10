@@ -13,7 +13,7 @@ export const useAuth = () => {
     setError(null);
     try {
       const { data } = await apiClient.post<AuthResponse>("/auth/login", {
-        email,
+        username: email, // Backend expects username
         password,
       });
       setAuth(data.user, data.access_token);
@@ -26,12 +26,12 @@ export const useAuth = () => {
     }
   };
 
-  const signup = async (name: string, email: string, password: string) => {
+  const signup = async (_name: string, email: string, password: string) => {
     setIsLoading(true);
     setError(null);
     try {
-      // Note: Endpoint /auth/register matches AuthController
-      await apiClient.post("/auth/register", { name, email, password });
+      // Backend expects 'username'. We'll use 'email' as username for now as it's unique.
+      await apiClient.post("/auth/register", { username: email, password });
       return true;
     } catch (err: any) {
       setError(err.response?.data?.message || "Signup failed");

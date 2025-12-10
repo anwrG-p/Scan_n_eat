@@ -17,10 +17,13 @@ export const useCatalogStore = create<CatalogState>((set) => ({
         set({ isLoading: true, error: null });
         try {
             // Call Recipe Service
-            const { data } = await apiClient.get<any[]>('/recipes');
+            const { data } = await apiClient.get<any>('/recipes');
             
             // Map RecipeDTO to Frontend Dish
-            const mappedDishes: Dish[] = data.map(recipe => ({
+            // Ensure data is array; it might be wrapped or empty
+            const recipeList = Array.isArray(data) ? data : (data.content || []);
+
+            const mappedDishes: Dish[] = recipeList.map((recipe: any) => ({
                 id: recipe.id,
                 name: recipe.title,
                 description: recipe.instructions || 'No description available',
