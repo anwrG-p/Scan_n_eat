@@ -11,28 +11,22 @@ Scan'n'Eat is built using a microservices architecture, ensuring scalability, ma
 
 ```mermaid
 graph TD
-    User[Clients (Web/Mobile)] -->|HTTP/REST| Gateway[Nginx API Gateway]
+    User[Clients Web/Mobile] -->|HTTP/REST| Gateway[Nginx API Gateway]
     
-    subgraph "Frontend Layer"
-        Gateway -->|/| WebApp[React Web App]
-    end
+    Gateway -->|/| WebApp[React Web App]
     
-    subgraph "Backend Services Layer"
-        Gateway -->|/api/auth| Auth[Auth Service]
-        Gateway -->|/api/ocr| OCR[OCR Service]
-        Gateway -->|/api/ingredients| Ingredients[Ingredients Service]
-        Gateway -->|/api/recipes| Recipes[Recipe Service]
-        Gateway -->|/api/inventory| Inventory[Inventory Service]
-        Gateway -->|/api/orders| Orders[Order Service]
-    end
+    Gateway -->|/api/auth| Auth[Auth Service]
+    Gateway -->|/api/ocr| OCR[OCR Service]
+    Gateway -->|/api/ingredients| Ingredients[Ingredients Service]
+    Gateway -->|/api/recipes| Recipes[Recipe Service]
+    Gateway -->|/api/inventory| Inventory[Inventory Service]
+    Gateway -->|/api/orders| Orders[Order Service]
     
-    subgraph "Data Layer"
-        Auth --> AuthDB[(Auth DB)]
-        Ingredients --> IngDB[(Ingredient DB)]
-        Recipes --> RecipeDB[(Recipe DB)]
-        Inventory --> InvDB[(Inventory DB)]
-        Orders --> OrderDB[(Order DB)]
-    end
+    Auth --> AuthDB[(Auth DB)]
+    Ingredients --> IngDB[(Ingredient DB)]
+    Recipes --> RecipeDB[(Recipe DB)]
+    Inventory --> InvDB[(Inventory DB)]
+    Orders --> OrderDB[(Order DB)]
 ```
 
 ## 🛠️ Tech Stack
