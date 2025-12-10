@@ -41,6 +41,19 @@ services:
     networks:
       - scan-n-eat-net
 
+  auth-service:
+    build: ./backend/auth-service
+    environment:
+      SERVER_PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/auth_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    depends_on:
+      - postgres
+    networks:
+      - scan-n-eat-net
+
   ingredients-service:
     build: ./backend/ingredients-service
     environment:
