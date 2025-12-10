@@ -22,17 +22,17 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
 
-        <Route element={<ProtectedRoute allowedRoles={['user', 'admin']} />}>
-          <Route element={<Layout />}>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/catalog" element={<CatalogPage />} />
-            <Route path="/catalog/:id" element={<DishDetailsPage />} />
-            <Route path="/scan" element={<ScanPage />} />
-            <Route path="/cart" element={<CartPage />} />
-            <Route path="/ingredients" element={<IngredientsPage />} />
-          </Route>
+        {/* Public Routes - Wrapped in Layout */}
+        <Route element={<Layout />}>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/catalog" element={<CatalogPage />} />
+          <Route path="/catalog/:id" element={<DishDetailsPage />} />
+          <Route path="/scan" element={<ScanPage />} />
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/ingredients" element={<IngredientsPage />} />
         </Route>
 
+        {/* Protected Routes */}
         <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminDashboardPage />} />

@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
-import { Card } from '../ui/Card';
 
 export const SignupForm: React.FC = () => {
     const navigate = useNavigate();
@@ -29,8 +28,7 @@ export const SignupForm: React.FC = () => {
     };
 
     return (
-        <Card className="w-full max-w-md p-8 mx-auto mt-10">
-            <h2 className="text-2xl font-bold text-center mb-6">Create Account</h2>
+        <div className="w-full space-y-6">
             <form onSubmit={handleSubmit} className="space-y-4">
                 <Input
                     label="Full Name"
@@ -64,7 +62,7 @@ export const SignupForm: React.FC = () => {
                     Create Account
                 </Button>
             </form>
-            <div className="mt-4 text-center text-sm text-gray-600">
+            <div className="text-center text-sm text-gray-600">
                 Already have an account?{' '}
                 <span
                     onClick={() => navigate('/login')}
@@ -73,6 +71,6 @@ export const SignupForm: React.FC = () => {
                     Sign in
                 </span>
             </div>
-        </Card>
+        </div>
     );
 };

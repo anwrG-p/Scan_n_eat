@@ -33,6 +33,9 @@ export const Navbar: React.FC = () => {
                             <Link to="/scan" className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                                 Scan Invoice
                             </Link>
+                            <Link to="/ingredients" className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                                Ingredients
+                            </Link>
                         </div>
                     </div>
                     <div className="flex items-center space-x-4">
@@ -45,12 +48,22 @@ export const Navbar: React.FC = () => {
                             )}
                         </Link>
 
-                        <div className="flex items-center space-x-2">
-                            <span className="text-sm font-medium text-gray-700 hidden md:block">{user?.name}</span>
-                            <button onClick={handleLogout} className="p-2 text-gray-400 hover:text-gray-500">
-                                <LogOut className="h-5 w-5" />
-                            </button>
-                        </div>
+                        {user ? (
+                            <div className="flex items-center space-x-3">
+                                <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
+                                    {user.name?.charAt(0) || 'U'}
+                                </div>
+                                <span className="text-sm font-medium text-gray-700 hidden md:block">{user.name}</span>
+                                <button onClick={handleLogout} className="p-2 text-gray-400 hover:text-gray-500" title="Logout">
+                                    <LogOut className="h-5 w-5" />
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="flex items-center space-x-2">
+                                <Link to="/login" className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Log in</Link>
+                                <Link to="/signup" className="bg-blue-600 text-white hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium">Register</Link>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
