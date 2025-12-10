@@ -1,130 +1,86 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { useIngredientsStore } from '../store/ingredientsStore';
-import { apiClient } from '../api/client';
-import { Upload, Loader2 } from 'lucide-react';
-import type { Ingredient } from '../types';
+import { Upload, Camera, Image as ImageIcon } from 'lucide-react';
 
 export const ScanPage: React.FC = () => {
-    const navigate = useNavigate();
-    const { addIngredient } = useIngredientsStore();
-    const [file, setFile] = useState<File | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
-    const [isScanning, setIsScanning] = useState(false);
-    const [status, setStatus] = useState<string>('');
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            const selected = e.target.files[0];
-            setFile(selected);
-            setPreview(URL.createObjectURL(selected));
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
         }
     };
 
-    const handleScan = async () => {
-        if (!file) return;
-
-        setIsScanning(true);
-        setStatus('Uploading and Analyzing Image...');
-
-        try {
-            // 1. Upload to OCR Service
-            const formData = new FormData();
-            formData.append('image', file);
-
-            // Note: apiClient baseURL is /api/v1. Path is /ocr/scan.
-            const response = await apiClient.post<{ success: boolean; detected_items: Ingredient[] }>(
-                '/ocr/scan',
-                formData,
-                {
-                    headers: { 'Content-Type': 'multipart/form-data' },
-                }
-            );
-
-            const items = response.data.detected_items;
-
-            if (!items || items.length === 0) {
-                setStatus('No ingredients detected.');
-                setIsScanning(false);
-                return;
-            }
-
-            // 2. Add to Pantry (Ingredients Service)
-            setStatus(`Found ${items.length} items. Saving to Pantry...`);
-            
-            // Sequential add to avoid overwhelming the server or race conditions
-            for (const item of items) {
-                // Ensure quantity is a number (OCR might return string)
-                if (typeof item.quantity === 'string') {
-                    item.quantity = parseFloat(item.quantity) || 1; 
-                }
-                await addIngredient(item);
-            }
-
-            setStatus('Done! Redirecting...');
-            setTimeout(() => navigate('/ingredients'), 1000);
-
-        } catch (error: any) {
-            console.error('Scan failed', error);
-            setStatus(`Error: ${error.response?.data?.error || error.message}`);
-            setIsScanning(false);
-        }
+    const handleCamera = () => {
+        alert("Camera functionality requires HTTPS and device permission. (Mocking camera open)");
     };
 
     return (
-        <div className="max-w-2xl mx-auto space-y-6">
-            <h1 className="text-3xl font-bold text-center">Scan Receipt / Invoice</h1>
+        <div className="max-w-3xl mx-auto py-12 px-4">
+            <div className="text-center mb-12">
+                <h1 className="text-4xl font-extrabold text-gray-900 mb-4">Scan or Upload Your Receipt</h1>
+                <p className="text-lg text-gray-600">Instantly add ingredients to your digital pantry.</p>
+            </div>
 
-            <Card className="p-8">
-                <div className="flex flex-col items-center space-y-6">
-                    {/* Upload Area */}
-                    <div className="w-full text-center">
-                        <label
-                            htmlFor="file-upload"
-                            className="cursor-pointer flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-10 hover:bg-gray-50 transition-colors"
-                        >
-                            {preview ? (
-                                <img src={preview} alt="Preview" className="max-h-64 rounded shadow-md" />
-                            ) : (
-                                <>
-                                    <Upload className="w-12 h-12 text-gray-400 mb-4" />
-                                    <span className="text-gray-600 font-medium">Click to upload an image</span>
-                                    <span className="text-gray-400 text-sm mt-1">JPG, PNG supported</span>
-                                </>
-                            )}
-                            <input
-                                id="file-upload"
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                onChange={handleFileChange}
-                                disabled={isScanning}
-                            />
-                        </label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                {/* Upload Option */}
+                <input
+                    type="file"
+                    accept="image/*"
+                    id="file-upload"
+                    className="hidden"
+                    onChange={handleFileUpload}
+                />
+                <label
+                    htmlFor="file-upload"
+                    className="cursor-pointer group relative bg-white rounded-2xl shadow-sm border-2 border-dashed border-gray-300 hover:border-blue-500 hover:bg-blue-50 transition-all p-8 flex flex-col items-center justify-center text-center h-64"
+                >
+                    <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <Upload className="w-8 h-8" />
                     </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">Upload Photo</h3>
+                    <p className="text-gray-500 text-sm">Select an image from your gallery</p>
+                </label>
 
-                    {/* Actions */}
-                    {file && !isScanning && (
-                        <Button onClick={handleScan} className="w-full text-lg py-6">
-                            Start Scan
-                        </Button>
-                    )}
+                {/* Camera Option */}
+                <button
+                    onClick={handleCamera}
+                    className="cursor-pointer group relative bg-white rounded-2xl shadow-sm border-2 border-dashed border-gray-300 hover:border-indigo-500 hover:bg-indigo-50 transition-all p-8 flex flex-col items-center justify-center text-center h-64"
+                >
+                    <div className="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <Camera className="w-8 h-8" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">Open Camera</h3>
+                    <p className="text-gray-500 text-sm">Take a photo of your receipt</p>
+                </button>
+            </div>
 
-                    {/* Status Feedback */}
-                    {isScanning && (
-                        <div className="flex flex-col items-center space-y-3 p-4 bg-blue-50 rounded-lg w-full">
-                            <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
-                            <p className="text-blue-700 font-medium">{status}</p>
-                        </div>
-                    )}
-                    
-                    {!isScanning && status && status.startsWith('Error') && (
-                        <div className="text-red-500 font-medium">{status}</div>
-                    )}
+            {/* Preview Section */}
+            {preview ? (
+                <Card className="p-4 overflow-hidden bg-white">
+                    <h3 className="font-bold text-gray-900 mb-4 flex items-center">
+                        <ImageIcon className="w-5 h-5 mr-2 text-gray-500" />
+                        Image Preview
+                    </h3>
+                    <div className="rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
+                        <img src={preview} alt="Preview" className="w-full h-auto object-contain max-h-96" />
+                    </div>
+                    <div className="mt-4 flex justify-end gap-3">
+                        <Button variant="secondary" onClick={() => setPreview(null)}>Retake/Cancel</Button>
+                        <Button onClick={() => alert("Processing invoice... (Mock)")}>Process Receipt</Button>
+                    </div>
+                </Card>
+            ) : (
+                <div className="text-center p-8 bg-gray-50 rounded-xl border border-gray-100">
+                    <p className="text-gray-400 italic">No image selected yet.</p>
                 </div>
-            </Card>
+            )}
         </div>
     );
 };

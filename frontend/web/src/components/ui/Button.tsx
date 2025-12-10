@@ -1,5 +1,6 @@
 import React from 'react';
 
+
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     variant?: 'primary' | 'secondary' | 'danger' | 'outline' | 'link';
     size?: 'sm' | 'md' | 'lg';
@@ -38,7 +39,7 @@ export const Button: React.FC<ButtonProps> = ({
             {...props}
         >
             {isLoading ? (
-                <span className="w-5 h-5 border-2 border-white/50 border-t-white rounded-full animate-spin mr-2" />
+                <span className="w-4 h-4 border-2 border-white/50 border-t-white rounded-full animate-spin mr-2" />
             ) : null}
             {children}
         </button>
