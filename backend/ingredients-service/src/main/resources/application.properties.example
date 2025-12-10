@@ -1,0 +1,11 @@
+spring.application.name=ingredients-service
+server.port=8085
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/ingredient_db
+spring.datasource.username=postgres
+spring.datasource.password=passwd_here
+
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+

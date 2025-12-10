@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ingredients-service
+  labels:
+    app: ingredients-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ingredients-service
+  template:
+    metadata:
+      labels:
+        app: ingredients-service
+    spec:
+      containers:
+        - name: ingredients-service
+          image: scan-n-eat/ingredients-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            # Assumes a 'postgres' service exists in K8s (or external name)
+            # Using the standard K8s connection string format
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://postgres-service:5432/ingredient_db
+            - name: SPRING_DATASOURCE_USERNAME
+              value: postgres
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: password
+            - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+              value: update
+
+          # --- PROBES ---
+          # Spring Boot Actuator is best, but defaulting to TCP check if Actuator isn't enabled
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 20
+
+          # --- RESOURCES ---
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "1024Mi"
+              cpu: "1000m"

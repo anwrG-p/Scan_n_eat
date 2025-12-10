@@ -36,17 +36,20 @@ CREATE DATABASE order_db;
 -- Enable UUID extension if needed (Postgres 13+ includes gen_random_uuid() in pgcrypto or core)
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
-CREATE TYPE user_role AS ENUM ('USER', 'ADMIN');
-
 CREATE TABLE users (
     user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     username VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
-    role user_role NOT NULL DEFAULT 'USER',
+    role VARCHAR(50) NOT NULL DEFAULT 'USER',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 COMMENT ON TABLE users IS 'Service: auth-service. Stores user credentials and roles.';
+
+-- Seed Admin User
+INSERT INTO users (username, password_hash, role)
+VALUES ('admin@scanneat.com', '$2a$10$B/zC0oWs/sgS3nDhDrKgPuy6cWBRo0SioJAebpw2FV2EG55Ay3Bjhi', 'ADMIN')
+ON CONFLICT (username) DO NOTHING;
 
 
 -- ------------------------------------------
