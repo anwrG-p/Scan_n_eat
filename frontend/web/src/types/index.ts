@@ -14,6 +14,7 @@ export interface Ingredient {
     name: string;
     quantity: number;
     unit: string;
+    expiry?: string;
 }
 
 export interface Dish {

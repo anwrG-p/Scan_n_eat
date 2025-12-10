@@ -2,19 +2,80 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Send, Lock, ChevronRight } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
+import { useLanguageStore } from '../store/languageStore';
 import { RecipeCard } from '../components/ui/RecipeCard';
 import { Button } from '../components/ui/Button'; // Assuming Button exists
 
 export const HomePage: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useAuthStore();
+    const { language } = useLanguageStore();
     const [searchQuery, setSearchQuery] = useState('');
     const [chatInput, setChatInput] = useState('');
+
+
+    const translations: Record<string, {
+        trending: string;
+        saved: string;
+        pantry: string;
+        signInSaved: string;
+        signInPantry: string;
+        searchPlaceholder: string;
+        chef: string;
+    }> = {
+        en: {
+            trending: "Trending Dishes:",
+            saved: "Saved Recipes",
+            pantry: "My Ingredients",
+            signInSaved: "Sign in to view your saved recipes",
+            signInPantry: "Sign in to manage your pantry",
+            searchPlaceholder: "Search for Your food here...",
+            chef: "Chef AI"
+        },
+        fr: {
+            trending: "Plats Tendances :",
+            saved: "Recettes Enregistrées",
+            pantry: "Mes Ingrédients",
+            signInSaved: "Connectez-vous pour voir vos recettes",
+            signInPantry: "Connectez-vous pour gérer votre garde-manger",
+            searchPlaceholder: "Recherchez votre nourriture ici...",
+            chef: "Chef IA"
+        },
+        ar: {
+            trending: "أطباق شائعة:",
+            saved: "الوصفات المحفوظة",
+            pantry: "مكوناتي",
+            signInSaved: "سجل الدخول لعرض وصفاتك المحفوظة",
+            signInPantry: "سجل الدخول لإدارة مخزنك",
+            searchPlaceholder: "ابحث عن طعامك هنا...",
+            chef: "الشيف الذكي"
+        },
+        it: {
+            trending: "Piatti di Tendenza:",
+            saved: "Ricette Salvate",
+            pantry: "I Miei Ingredienti",
+            signInSaved: "Accedi per visualizzare le ricette salvate",
+            signInPantry: "Accedi per gestire la tua dispensa",
+            searchPlaceholder: "Cerca il tuo cibo qui...",
+            chef: "Chef AI"
+        },
+        de: {
+            trending: "Beliebte Gerichte:",
+            saved: "Gespeicherte Rezepte",
+            pantry: "Meine Zutaten",
+            signInSaved: "Melden Sie sich an, um Ihre Rezepte zu sehen",
+            signInPantry: "Melden Sie sich an, um Ihre Speisekammer zu verwalten",
+            searchPlaceholder: "Suchen Sie hier nach Ihrem Essen...",
+            chef: "Chef KI"
+        }
+    };
+
+    const t = translations[language] || translations.en;
 
     // Mock Data
     const trendingDishes = [
         { id: '1', title: 'Mediterranean Salad', description: 'Fresh and healthy salad with feta cheese and olives.', imageUrl: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&q=80&w=400', difficulty: 'Easy' as const, time: '15 min', calories: '320 kcal' },
-        { id: '2', title: 'Grilled Salmon', description: 'Perfectly grilled salmon with asparagus and lemon butter source.', imageUrl: 'https://images.unsplash.com/photo-1467003909585-2f8a7270028d?auto=format&fit=crop&q=80&w=400', difficulty: 'Medium' as const, time: '25 min', calories: '450 kcal' },
+        { id: '2', title: 'Grilled Salmon', description: 'Perfectly grilled salmon with asparagus and lemon butter source.', imageUrl: 'https://www.thecookierookie.com/wp-content/uploads/2023/05/grilled-salmon-recipe-2.jpg', difficulty: 'Medium' as const, time: '25 min', calories: '450 kcal' },
         { id: '3', title: 'Vegetable Stir-Fry', description: 'Quick and easy stir-fry with seasonal vegetables.', imageUrl: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&q=80&w=400', difficulty: 'Easy' as const, time: '20 min', calories: '280 kcal' },
     ];
 
@@ -46,75 +107,81 @@ export const HomePage: React.FC = () => {
                     <div className="relative">
                         <input
                             type="text"
-                            placeholder="Search for Your food here..."
-                            className="w-full pl-12 pr-4 py-4 rounded-full border border-gray-200 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-lg"
+                            placeholder={t.searchPlaceholder}
+                            className={`w-full pl-12 pr-4 py-4 rounded-full border border-gray-200 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-lg ${language === 'ar' ? 'text-right' : ''}`}
+                            dir={language === 'ar' ? 'rtl' : 'ltr'}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
-                        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-6 w-6" />
+                        <Search className={`absolute ${language === 'ar' ? 'right-4' : 'left-4'} top-1/2 transform -translate-y-1/2 text-gray-400 h-6 w-6`} />
                     </div>
                 </div>
 
                 {/* Trending Dishes */}
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                        Trending Dishes:
+                        {t.trending}
                     </h2>
                     <div className="flex flex-col gap-4">
                         {trendingDishes.map(dish => (
-                            <RecipeCard key={dish.id} {...dish} />
+                            <div key={dish.id} onClick={() => navigate(`/catalog/${dish.id}`)} className="cursor-pointer transition-transform hover:scale-[1.01]">
+                                <RecipeCard {...dish} />
+                            </div>
                         ))}
                     </div>
                 </div>
             </div>
 
-            {/* COLUMN A: Left Sidebar - User Tools (Order 2 on Mobile, 1 on Desktop) */}
-            <div className="lg:col-span-3 order-2 lg:order-1 space-y-6">
-                {/* Saved Recipes */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                    <h3 className="text-lg font-bold text-gray-900 mb-4 border-b border-gray-100 pb-2">Saved Recipes</h3>
-                    {user ? (
-                        <ul className="space-y-3">
-                            {savedRecipes.map((recipe, idx) => (
-                                <li key={idx} className="flex items-center text-gray-600 hover:text-blue-600 cursor-pointer text-sm">
-                                    <ChevronRight className="w-4 h-4 mr-1 text-gray-400" />
-                                    {recipe}
-                                </li>
-                            ))}
-                        </ul>
-                    ) : (
-                        <div className="text-center py-6 px-4 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                            <Lock className="w-8 h-8 mx-auto text-gray-400 mb-2" />
-                            <p className="text-sm text-gray-500 mb-3">Sign in to view your saved recipes</p>
-                            <Button size="sm" variant="outline" onClick={() => navigate('/login')} className="w-full">Sign In</Button>
-                        </div>
-                    )}
-                </div>
 
-                {/* My Ingredients */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                    <h3 className="text-lg font-bold text-gray-900 mb-4 border-b border-gray-100 pb-2">My Ingredients</h3>
-                    {user ? (
-                        <ul className="space-y-3">
-                            {myIngredients.map((item, idx) => (
-                                <li key={idx} className="flex items-center text-gray-600 text-sm">
-                                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full mr-2" />
-                                    {item}
+            {/* COLUMN A: Left Sidebar - User Tools (Order 2 on Mobile, 1 on Desktop) */}
+            <div className="lg:col-span-3 order-2 lg:order-1">
+                <div className="sticky top-24 space-y-6">
+                    {/* Saved Recipes */}
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <h3 className="text-lg font-bold text-gray-900 mb-4 border-b border-gray-100 pb-2">{t.saved}</h3>
+                        {user ? (
+                            <ul className="space-y-3">
+                                {savedRecipes.map((recipe, idx) => (
+                                    <li key={idx} className="flex items-center text-gray-600 hover:text-blue-600 cursor-pointer text-sm">
+                                        <ChevronRight className={`w-4 h-4 text-gray-400 ${language === 'ar' ? 'ml-1 transform rotate-180' : 'mr-1'}`} />
+                                        {recipe}
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <div className="text-center py-6 px-4 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                                <Lock className="w-8 h-8 mx-auto text-gray-400 mb-2" />
+                                <p className="text-sm text-gray-500 mb-3">{t.signInSaved}</p>
+                                <Button size="sm" variant="outline" onClick={() => navigate('/login')} className="w-full">Sign In</Button>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* My Ingredients */}
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <h3 className="text-lg font-bold text-gray-900 mb-4 border-b border-gray-100 pb-2">{t.pantry}</h3>
+                        {user ? (
+                            <ul className="space-y-3">
+                                {myIngredients.map((item, idx) => (
+                                    <li key={idx} className="flex items-center text-gray-600 text-sm">
+                                        <div className={`w-1.5 h-1.5 bg-green-500 rounded-full ${language === 'ar' ? 'ml-2' : 'mr-2'}`} />
+                                        {item}
+                                    </li>
+                                ))}
+                                <li className="pt-2">
+                                    <Button variant="link" size="sm" onClick={() => navigate('/ingredients')} className="p-0 h-auto text-blue-600">
+                                        View All
+                                    </Button>
                                 </li>
-                            ))}
-                            <li className="pt-2">
-                                <Button variant="link" size="sm" onClick={() => navigate('/ingredients')} className="p-0 h-auto text-blue-600">
-                                    View All
-                                </Button>
-                            </li>
-                        </ul>
-                    ) : (
-                        <div className="text-center py-6 px-4 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                            <Lock className="w-8 h-8 mx-auto text-gray-400 mb-2" />
-                            <p className="text-sm text-gray-500 mb-3">Sign in to manage your pantry</p>
-                            <Button size="sm" variant="outline" onClick={() => navigate('/login')} className="w-full">Sign In</Button>
-                        </div>
-                    )}
+                            </ul>
+                        ) : (
+                            <div className="text-center py-6 px-4 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                                <Lock className="w-8 h-8 mx-auto text-gray-400 mb-2" />
+                                <p className="text-sm text-gray-500 mb-3">{t.signInPantry}</p>
+                                <Button size="sm" variant="outline" onClick={() => navigate('/login')} className="w-full">Sign In</Button>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -122,7 +189,7 @@ export const HomePage: React.FC = () => {
             <div className="lg:col-span-3 order-3 lg:order-3">
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-0 overflow-hidden h-full flex flex-col min-h-[500px] lg:h-[calc(100vh-8rem)] sticky top-24">
                     <div className="p-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
-                        <h3 className="font-bold text-lg">Chef AI</h3>
+                        <h3 className="font-bold text-lg">{t.chef}</h3>
                         <p className="text-blue-100 text-xs">Ask our chef how to cook</p>
                     </div>
 

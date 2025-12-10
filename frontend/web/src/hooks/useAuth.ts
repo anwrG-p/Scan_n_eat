@@ -15,11 +15,14 @@ export const useAuth = () => {
             // FIXME: Replace with actual endpoint
             // const { data } = await apiClient.post<AuthResponse>('/auth/login', { email, password });
 
+
             // Mocking response for now to allow progress without backend
+            const role = email.toLowerCase().includes('admin') ? 'admin' as const : 'user' as const;
             const data: AuthResponse = {
-                user: { id: '1', name: 'Test User', email, role: 'user' },
+                user: { id: '1', name: role === 'admin' ? 'Administrator' : 'Test User', email, role },
                 access_token: 'mock-jwt-token',
             };
+
 
             // Simulate network delay
             await new Promise(resolve => setTimeout(resolve, 1000));
