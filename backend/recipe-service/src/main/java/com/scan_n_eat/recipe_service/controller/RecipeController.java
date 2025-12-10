@@ -2,6 +2,9 @@ package com.scan_n_eat.recipe_service.controller;
 
 import com.scan_n_eat.recipe_service.dto.RecipeDTO;
 import com.scan_n_eat.recipe_service.service.RecipeService;
+
+import main.java.com.scan_n_eat.recipe_service.service.RecipeDataService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -103,5 +106,23 @@ public class RecipeController {
     public ResponseEntity<List<RecipeDTO>> findRecipesByIngredient(@PathVariable Integer ingredientId) {
         List<RecipeDTO> recipes = recipeService.findRecipesByIngredient(ingredientId);
         return ResponseEntity.ok(recipes);
+    }
+
+    @Autowired
+    private RecipeDataService recipeDataService;
+
+    // Add this endpoint
+    @PostMapping("/populate")
+    public ResponseEntity<String> populateRecipes() {
+        try {
+            long countBefore = recipeDataService.getRecipeCount();
+            recipeDataService.populateRecipesFromAPI();
+            long countAfter = recipeDataService.getRecipeCount();
+
+            return ResponseEntity.ok("Populated database. Recipes added: " + (countAfter - countBefore));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error populating recipes: " + e.getMessage());
+        }
     }
 }
