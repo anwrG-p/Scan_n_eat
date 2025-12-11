@@ -1,0 +1,65 @@
+name: Chef's Pantry CI
+
+on:
+  push:
+    branches: ["main", "master"]
+  pull_request:
+    branches: ["main", "master"]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # --- SETUP JAVA (BACKEND) ---
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          cache: "maven"
+
+      # --- SETUP NODE (FRONTEND) ---
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/web/package-lock.json
+
+      # --- BUILD FRONTEND ---
+      - name: Install Frontend Dependencies
+        run: |
+          cd frontend/web
+          npm ci
+
+      - name: Build Frontend
+        run: |
+          cd frontend/web
+          npm run build
+
+      # --- BUILD BACKEND SERVICES ---
+      # We can build all maven projects at once if there was a root pom,
+      # but since they are separate, we build them individually or use a script.
+
+      - name: Build Auth Service
+        run: mvn -f backend/auth-service/pom.xml clean package -DskipTests
+
+      - name: Build Order Service
+        run: mvn -f backend/order-service/pom.xml clean package -DskipTests
+
+      - name: Build Recipe Service
+        run: mvn -f backend/recipe-service/pom.xml clean package -DskipTests
+
+      - name: Build Ingredients Service
+        run: mvn -f backend/ingredients-service/pom.xml clean package -DskipTests
+
+      - name: Build Inventory Service
+        run: mvn -f backend/inventory-service/pom.xml clean package -DskipTests
+
+      # --- DOCKER BUILD CHECK ---
+      # Verifies that docker-compose build works
+      - name: Verify Docker Compose Build
+        run: docker-compose build

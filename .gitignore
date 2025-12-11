@@ -1,0 +1,47 @@
+# --- Environment ---
+.env
+.env.local
+.env.*.local
+
+# --- IDEs ---
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# --- Java / Maven ---
+target/
+*.class
+*.jar
+*.war
+*.ear
+mvnw
+mvnw.cmd
+.mvn/
+
+# --- Node / Frontend ---
+node_modules/
+dist/
+build/
+.npm/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# --- Python / OCR ---
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+
+# --- Docker ---
+postgres_data/
+active_postgres_data/
+
+# --- Logs ---
+logs/
+*.log
