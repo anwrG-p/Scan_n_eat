@@ -11,4 +11,5 @@ public class IngredientDto {
     private Long id;
     private String name;
     private Double calories;
+    private Double averagePrice;
 }

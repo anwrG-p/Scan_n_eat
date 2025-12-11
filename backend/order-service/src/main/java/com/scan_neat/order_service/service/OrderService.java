@@ -1,19 +1,14 @@
 package com.scan_neat.order_service.service;
 
-import com.scan_neat.order_service.dto.CreateOrderRequest;
-import com.scan_neat.order_service.dto.OrderItemResponse;
-import com.scan_neat.order_service.dto.OrderResponse;
-import com.scan_neat.order_service.model.Order;
+import com.scan_neat.order_service.dto.OrderRequest;
+import com.scan_neat.order_service.model.ShopOrder;
 import com.scan_neat.order_service.model.OrderItem;
-import com.scan_neat.order_service.model.OrderStatus;
-import com.scan_neat.order_service.repository.OrderItemRepository;
 import com.scan_neat.order_service.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -23,73 +18,40 @@ import java.util.stream.Collectors;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final OrderItemRepository orderItemRepository;
 
     @Transactional
-    public OrderResponse createOrder(CreateOrderRequest request) {
-        // Calculate total price
-        BigDecimal totalPrice = request.getItems().stream()
-                .map(item -> item.getPriceAtPurchase().multiply(BigDecimal.valueOf(item.getQuantity())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    public ShopOrder createOrder(OrderRequest request) {
+        ShopOrder order = new ShopOrder();
+        order.setUserId(request.getUserId());
+        order.setStatus("COMPLETED"); // Auto-complete for now
 
-        // Save Order
-        Order order = Order.builder()
-                .userId(request.getUserId())
-                .totalPrice(totalPrice)
-                .status(OrderStatus.PENDING)
-                .build();
+        List<OrderItem> items = request.getItems().stream().map(itemDto -> {
+            OrderItem item = new OrderItem();
+            item.setName(itemDto.getName());
+            item.setQuantity(itemDto.getQuantity());
+            item.setPricePerUnit(itemDto.getPrice());
+            item.setRecipeId(itemDto.getRecipeId());
+            item.setIngredientId(itemDto.getIngredientId());
+            return item;
+        }).collect(Collectors.toList());
 
-        Order savedOrder = orderRepository.save(order);
+        order.setItems(items);
+        
+        // Calculate total
+        BigDecimal total = items.stream()
+            .map(item -> item.getPricePerUnit().multiply(BigDecimal.valueOf(item.getQuantity())))
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+            
+        order.setTotalAmount(total);
 
-        // Save Order Items
-        List<OrderItem> orderItems = request.getItems().stream()
-                .map(itemRequest -> OrderItem.builder()
-                        .order(savedOrder)
-                        .ingredientId(itemRequest.getIngredientId())
-                        .quantity(itemRequest.getQuantity())
-                        .priceAtPurchase(itemRequest.getPriceAtPurchase())
-                        .build())
-                .collect(Collectors.toList());
-
-        List<OrderItem> savedItems = orderItemRepository.saveAll(orderItems);
-
-        return mapToOrderResponse(savedOrder, savedItems);
+        return orderRepository.save(order);
     }
 
-    public OrderResponse getOrderById(UUID id) {
-        Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
-        List<OrderItem> items = orderItemRepository.findByOrder(order);
-        return mapToOrderResponse(order, items);
+    public List<ShopOrder> getOrdersByUserId(UUID userId) {
+        return orderRepository.findByUserId(userId);
     }
-
-    public List<OrderResponse> getOrdersByUserId(UUID userId) {
-        List<Order> orders = orderRepository.findByUserId(userId);
-        return orders.stream()
-                .map(order -> {
-                    List<OrderItem> items = orderItemRepository.findByOrder(order);
-                    return mapToOrderResponse(order, items);
-                })
-                .collect(Collectors.toList());
-    }
-
-    private OrderResponse mapToOrderResponse(Order order, List<OrderItem> items) {
-        List<OrderItemResponse> itemResponses = items.stream()
-                .map(item -> OrderItemResponse.builder()
-                        .id(item.getId())
-                        .ingredientId(item.getIngredientId())
-                        .quantity(item.getQuantity())
-                        .priceAtPurchase(item.getPriceAtPurchase())
-                        .build())
-                .collect(Collectors.toList());
-
-        return OrderResponse.builder()
-                .id(order.getId())
-                .userId(order.getUserId())
-                .totalPrice(order.getTotalPrice())
-                .status(order.getStatus())
-                .createdAt(order.getCreatedAt())
-                .items(itemResponses)
-                .build();
+    
+    public ShopOrder getOrderById(UUID id) {
+        return orderRepository.findById(id).orElseThrow(() -> new RuntimeException("Order not found"));
     }
 }

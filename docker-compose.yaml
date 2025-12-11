@@ -113,6 +113,20 @@ services:
     networks:
       - scan-n-eat-net
 
+  order-service:
+    build: ./backend/order-service
+    environment:
+      SERVER_PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/order_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - scan-n-eat-net
+
   # --- PLACEHOLDERS FOR MISSING SERVICES ---
   # These are defined so Nginx doesn't crash on startup if it tries to resolve them aggressively.
   # However, Nginx usually allows upstream to be down.

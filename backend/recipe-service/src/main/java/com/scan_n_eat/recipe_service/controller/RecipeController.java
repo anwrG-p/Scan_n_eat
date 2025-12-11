@@ -76,6 +76,18 @@ public class RecipeController {
         }
     }
 
+    // DELETE /api/recipes/all - Delete all recipes
+    @DeleteMapping("/all")
+    public ResponseEntity<String> deleteAllRecipes() {
+        try {
+            recipeService.deleteAllRecipes();
+            return ResponseEntity.ok("All recipes deleted successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error deleting all recipes: " + e.getMessage());
+        }
+    }
+
     // GET /api/recipes/search?title=pasta - Search recipes by title
     @GetMapping("/search")
     public ResponseEntity<List<RecipeDTO>> searchRecipesByTitle(@RequestParam String title) {
@@ -123,6 +135,54 @@ public class RecipeController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error populating recipes: " + e.getMessage());
+        }
+    }
+
+    // Saved Recipes Endpoints
+    
+    // POST /api/recipes/{id}/save - Toggle save recipe for user
+    @PostMapping("/{id}/save")
+    public ResponseEntity<com.scan_n_eat.recipe_service.dto.SaveRecipeResponse> toggleSaveRecipe(
+            @PathVariable UUID id,
+            @RequestHeader("X-User-Id") Long userId) {
+        try {
+            com.scan_n_eat.recipe_service.dto.SaveRecipeResponse response = recipeService.toggleSaveRecipe(userId, id);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new com.scan_n_eat.recipe_service.dto.SaveRecipeResponse(false, "Error: " + e.getMessage()));
+        }
+    }
+
+    // GET /api/recipes/saved - Get saved recipes for user
+    @GetMapping("/saved")
+    public ResponseEntity<List<RecipeDTO>> getSavedRecipes(@RequestHeader("X-User-Id") Long userId) {
+        try {
+            List<RecipeDTO> savedRecipes = recipeService.getSavedRecipes(userId);
+            return ResponseEntity.ok(savedRecipes);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // GET /api/recipes/{id}/is-saved - Check if recipe is saved
+    @GetMapping("/{id}/is-saved")
+    public ResponseEntity<Boolean> isRecipeSaved(
+            @PathVariable UUID id,
+            @RequestHeader("X-User-Id") Long userId) {
+        boolean saved = recipeService.isRecipeSaved(userId, id);
+        return ResponseEntity.ok(saved);
+    }
+
+    // GET /api/recipes/trending - Get trending recipes
+    @GetMapping("/trending")
+    public ResponseEntity<List<RecipeDTO>> getTrendingRecipes(
+            @RequestParam(defaultValue = "10") int limit) {
+        try {
+            List<RecipeDTO> trending = recipeService.getTrendingRecipes(limit);
+            return ResponseEntity.ok(trending);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }

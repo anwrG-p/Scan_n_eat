@@ -80,18 +80,34 @@ public class RecipeDataService {
                 for (int i = 1; i <= 20; i++) {
                     String ingredientKey = "strIngredient" + i;
                     String ingredient = (String) meal.get(ingredientKey);
+                    
+                    String measureKey = "strMeasure" + i;
+                    String measure = (String) meal.get(measureKey);
 
                     if (ingredient != null && !ingredient.trim().isEmpty()) {
                         try {
                             // Call ingredients-service to sync and get ID
                             // Using the internal docker service name
-                            String syncUrl = "http://ingredients-service:8080/api/ingredients/sync?name=" + ingredient;
+                            String encodedIngredient = java.net.URLEncoder.encode(ingredient, "UTF-8");
+                            String syncUrl = "http://ingredients-service:8080/api/ingredients/sync?name=" + encodedIngredient;
                             Map<String, Object> ingredientResp = restTemplate.postForObject(syncUrl, null, Map.class);
 
                             if (ingredientResp != null && ingredientResp.containsKey("id")) {
                                 Integer ingredientId = ((Number) ingredientResp.get("id")).intValue();
-                                RecipeIngredient recipeIngredient = new RecipeIngredient(recipe, ingredientId);
+                                RecipeIngredient recipeIngredient = new RecipeIngredient();
+                                recipeIngredient.setRecipe(recipe);
+                                recipeIngredient.setIngredientId(ingredientId);
+                                recipeIngredient.setQuantity(measure);
                                 recipe.addIngredient(recipeIngredient);
+
+                                // Add price to total
+                                if (ingredientResp.containsKey("averagePrice")) {
+                                    Double price = ((Number) ingredientResp.get("averagePrice")).doubleValue();
+                                    // Simple calculation: just add unit price per ingredient roughly
+                                    // In a real app we'd parse Quantity (e.g. "200g") and multiply
+                                    Double currentPrice = recipe.getPrice() != null ? recipe.getPrice() : 0.0;
+                                    recipe.setPrice(currentPrice + price);
+                                }
                             }
                         } catch (Exception ex) {
                             System.err.println("Failed to sync ingredient: " + ingredient + " - " + ex.getMessage());

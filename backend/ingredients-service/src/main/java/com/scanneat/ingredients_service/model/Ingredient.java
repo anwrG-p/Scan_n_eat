@@ -16,5 +16,7 @@ public class Ingredient {
     private Long id;
 
     private String name;
-    private Double calories; // optional
+    private Double calories; // kcal per 100g
+    private Double averagePrice; // per 100g (estimated)
+    private String externalId; // Open Food Facts ID
 }

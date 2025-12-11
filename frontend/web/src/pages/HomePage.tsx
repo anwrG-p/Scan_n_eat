@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Send, Lock, ChevronRight } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useLanguageStore } from '../store/languageStore';
+import { useSavedRecipesStore } from '../store/savedRecipesStore';
 import { RecipeCard } from '../components/ui/RecipeCard';
 import { Button } from '../components/ui/Button'; // Assuming Button exists
 
@@ -10,8 +11,28 @@ export const HomePage: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useAuthStore();
     const { language } = useLanguageStore();
+    const { savedRecipes, trendingRecipes, fetchSavedRecipes, fetchTrendingRecipes, isLoading } = useSavedRecipesStore();
     const [searchQuery, setSearchQuery] = useState('');
     const [chatInput, setChatInput] = useState('');
+
+    // Fetch data on mount
+    useEffect(() => {
+        fetchTrendingRecipes(5);
+        if (user) {
+            fetchSavedRecipes();
+        }
+    }, [user]);
+
+    // Convert Dish to format expected by RecipeCard
+    const mapDishToCardProps = (dish: any) => ({
+        id: dish.id,
+        title: dish.name,
+        description: dish.description,
+        imageUrl: dish.image_url,
+        difficulty: 'Easy' as const,
+        time: '20 min',
+        calories: '350 kcal'
+    });
 
 
     const translations: Record<string, {
@@ -72,17 +93,7 @@ export const HomePage: React.FC = () => {
 
     const t = translations[language] || translations.en;
 
-    // Mock Data
-    const trendingDishes = [
-        { id: '1', title: 'Mediterranean Salad', description: 'Fresh and healthy salad with feta cheese and olives.', imageUrl: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&q=80&w=400', difficulty: 'Easy' as const, time: '15 min', calories: '320 kcal' },
-        { id: '2', title: 'Grilled Salmon', description: 'Perfectly grilled salmon with asparagus and lemon butter source.', imageUrl: 'https://www.thecookierookie.com/wp-content/uploads/2023/05/grilled-salmon-recipe-2.jpg', difficulty: 'Medium' as const, time: '25 min', calories: '450 kcal' },
-        { id: '3', title: 'Vegetable Stir-Fry', description: 'Quick and easy stir-fry with seasonal vegetables.', imageUrl: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&q=80&w=400', difficulty: 'Easy' as const, time: '20 min', calories: '280 kcal' },
-    ];
-
-    const savedRecipes = [
-        "Spaghetti Carbonara", "Chicken Curry", "Beef Stew"
-    ];
-
+    // myIngredients mock data - keeping for now until inventory service is integrated
     const myIngredients = [
         "Tomatoes", "Eggs", "Milk", "Cheese", "Onions"
     ];
@@ -122,13 +133,23 @@ export const HomePage: React.FC = () => {
                     <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
                         {t.trending}
                     </h2>
-                    <div className="flex flex-col gap-4">
-                        {trendingDishes.map(dish => (
-                            <div key={dish.id} onClick={() => navigate(`/catalog/${dish.id}`)} className="cursor-pointer transition-transform hover:scale-[1.01]">
-                                <RecipeCard {...dish} />
-                            </div>
-                        ))}
-                    </div>
+                    {isLoading ? (
+                        <div className="text-center py-8">
+                            <p className="text-gray-500">Loading trending recipes...</p>
+                        </div>
+                    ) : trendingRecipes.length > 0 ? (
+                        <div className="flex flex-col gap-4">
+                            {trendingRecipes.map(dish => (
+                                <div key={dish.id} onClick={() => navigate(`/catalog/${dish.id}`)} className="cursor-pointer transition-transform hover:scale-[1.01]">
+                                    <RecipeCard {...mapDishToCardProps(dish)} />
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-8 bg-gray-50 rounded-lg">
+                            <p className="text-gray-500">No trending recipes available</p>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -140,14 +161,22 @@ export const HomePage: React.FC = () => {
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                         <h3 className="text-lg font-bold text-gray-900 mb-4 border-b border-gray-100 pb-2">{t.saved}</h3>
                         {user ? (
-                            <ul className="space-y-3">
-                                {savedRecipes.map((recipe, idx) => (
-                                    <li key={idx} className="flex items-center text-gray-600 hover:text-blue-600 cursor-pointer text-sm">
-                                        <ChevronRight className={`w-4 h-4 text-gray-400 ${language === 'ar' ? 'ml-1 transform rotate-180' : 'mr-1'}`} />
-                                        {recipe}
-                                    </li>
-                                ))}
-                            </ul>
+                            savedRecipes.length > 0 ? (
+                                <ul className="space-y-3">
+                                    {savedRecipes.map((recipe) => (
+                                        <li 
+                                            key={recipe.id} 
+                                            onClick={() => navigate(`/catalog/${recipe.id}`)}
+                                            className="flex items-center text-gray-600 hover:text-blue-600 cursor-pointer text-sm"
+                                        >
+                                            <ChevronRight className={`w-4 h-4 text-gray-400 ${language === 'ar' ? 'ml-1 transform rotate-180' : 'mr-1'}`} />
+                                            {recipe.name}
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="text-sm text-gray-500 text-center py-4">No saved recipes yet</p>
+                            )
                         ) : (
                             <div className="text-center py-6 px-4 bg-gray-50 rounded-lg border border-dashed border-gray-300">
                                 <Lock className="w-8 h-8 mx-auto text-gray-400 mb-2" />

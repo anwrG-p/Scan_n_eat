@@ -8,7 +8,12 @@ import { CatalogPage } from './pages/CatalogPage';
 import { DishDetailsPage } from './pages/DishDetailsPage';
 import { ScanPage } from './pages/ScanPage';
 import { CartPage } from './pages/CartPage';
+import { OrderHistoryPage } from './pages/OrderHistoryPage';
 import { IngredientsPage } from './pages/IngredientsPage';
+import { FAQPage } from './pages/FAQPage';
+import { HelpPage } from './pages/HelpPage';
+import { AboutPage } from './pages/AboutPage';
+import { TermsPage } from './pages/TermsPage';
 
 import { AdminLayout } from './components/admin/AdminLayout';
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
@@ -29,7 +34,12 @@ function App() {
           <Route path="/catalog/:id" element={<DishDetailsPage />} />
           <Route path="/scan" element={<ScanPage />} />
           <Route path="/cart" element={<CartPage />} />
+          <Route path="/orders" element={<OrderHistoryPage />} />
           <Route path="/ingredients" element={<IngredientsPage />} />
+          <Route path="/faq" element={<FAQPage />} />
+          <Route path="/help" element={<HelpPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/terms" element={<TermsPage />} />
         </Route>
 
         {/* Protected Routes */}

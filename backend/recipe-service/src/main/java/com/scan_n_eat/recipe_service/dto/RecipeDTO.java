@@ -12,20 +12,23 @@ public class RecipeDTO {
     private Integer servings;
     private String imageUrl;
     private List<Integer> ingredientIds;
+    private Double price;
+    private List<RecipeIngredientDTO> recipeIngredients;
 
     // Constructors
     public RecipeDTO() {
     }
 
-    public RecipeDTO(UUID id, String title, String instructions, String prepTime,
-            Integer servings, String imageUrl, List<Integer> ingredientIds) {
+    public RecipeDTO(UUID id, String title, String instructions, String prepTime, Integer servings, String imageUrl,
+            List<RecipeIngredientDTO> recipeIngredients, Double price) {
         this.id = id;
         this.title = title;
         this.instructions = instructions;
         this.prepTime = prepTime;
         this.servings = servings;
         this.imageUrl = imageUrl;
-        this.ingredientIds = ingredientIds;
+        this.recipeIngredients = recipeIngredients;
+        this.price = price;
     }
 
     // Getters and Setters
@@ -83,5 +86,21 @@ public class RecipeDTO {
 
     public void setIngredientIds(List<Integer> ingredientIds) {
         this.ingredientIds = ingredientIds;
+    }
+
+    public Double getPrice() {
+        return price;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
+    }
+
+    public List<RecipeIngredientDTO> getRecipeIngredients() {
+        return recipeIngredients;
+    }
+
+    public void setRecipeIngredients(List<RecipeIngredientDTO> recipeIngredients) {
+        this.recipeIngredients = recipeIngredients;
     }
 }
