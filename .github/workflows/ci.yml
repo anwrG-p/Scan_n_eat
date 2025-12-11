@@ -1,4 +1,4 @@
-name: Chef's Pantry CI
+name: Scan'n Eat CI
 
 on:
   push:
