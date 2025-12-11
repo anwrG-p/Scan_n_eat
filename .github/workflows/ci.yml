@@ -1,4 +1,4 @@
-name: Chef's Pantry CI
+name: Scan'n Eat CI
 
 on:
   push:
@@ -63,3 +63,4 @@ jobs:
       # Verifies that docker-compose build works
       - name: Verify Docker Compose Build
         run: docker-compose build
+
