@@ -58,7 +58,10 @@ export const Navbar: React.FC = () => {
                                 <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
                                     {user.name?.charAt(0) || 'U'}
                                 </div>
-                                <span className="text-sm font-medium text-gray-700 hidden md:block">{user.name}</span>
+                                <div className="flex flex-col">
+                                    <span className="text-sm font-medium text-gray-700 hidden md:block">{user.name}</span>
+                                    <Link to="/orders" className="text-xs text-blue-600 hover:underline hidden md:block">My Orders</Link>
+                                </div>
                                 <button onClick={handleLogout} className="p-2 text-gray-400 hover:text-gray-500" title="Logout">
                                     <LogOut className="h-5 w-5" />
                                 </button>

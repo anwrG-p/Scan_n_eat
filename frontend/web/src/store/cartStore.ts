@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { CartItem, Dish } from '../types';
+import { apiClient } from '../api/client';
+import { useAuthStore } from './authStore';
 
 interface CartState {
     items: CartItem[];
@@ -8,7 +10,9 @@ interface CartState {
     removeItem: (dishId: string) => void;
     updateQuantity: (dishId: string, quantity: number) => void;
     clearCart: () => void;
+    getItemsCount: () => number;
     formattedTotal: () => string;
+    checkout: () => Promise<void>;
 }
 
 export const useCartStore = create<CartState>()(
@@ -45,6 +49,39 @@ export const useCartStore = create<CartState>()(
                 );
                 return total.toFixed(2);
             },
+            getItemsCount: () => {
+                return get().items.reduce((count, item) => count + item.cartQuantity, 0);
+            },
+            checkout: async () => {
+                const { user } = useAuthStore.getState();
+                if (!user) {
+                    throw new Error('User must be logged in to checkout');
+                }
+                
+                const state = get();
+                if (state.items.length === 0) {
+                     return;
+                }
+
+                const orderRequest = {
+                    userId: user.id || (user as any).userId,
+                    items: state.items.map(item => ({
+                        name: item.name || item.title, // handle potential name differences
+                        quantity: item.cartQuantity,
+                        price: item.price,
+                        recipeId: item.id
+                        // ingredientId not supported for direct cart items yet
+                    }))
+                };
+
+                try {
+                    await apiClient.post('/orders', orderRequest);
+                    get().clearCart();
+                } catch (error) {
+                    console.error('Checkout failed:', error);
+                    throw error;
+                }
+            }
         }),
         {
             name: 'cart-storage',

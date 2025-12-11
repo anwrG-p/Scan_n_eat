@@ -16,10 +16,13 @@ import java.util.stream.Collectors;
 public class RecipeService {
 
     private final RecipeRepository recipeRepository;
+    private final com.scan_n_eat.recipe_service.repository.SavedRecipeRepository savedRecipeRepository;
 
     @Autowired
-    public RecipeService(RecipeRepository recipeRepository) {
+    public RecipeService(RecipeRepository recipeRepository,
+                         com.scan_n_eat.recipe_service.repository.SavedRecipeRepository savedRecipeRepository) {
         this.recipeRepository = recipeRepository;
+        this.savedRecipeRepository = savedRecipeRepository;
     }
 
     // Get all recipes
@@ -49,7 +52,9 @@ public class RecipeService {
         // Add ingredients
         if (recipeDTO.getIngredientIds() != null) {
             for (Integer ingredientId : recipeDTO.getIngredientIds()) {
-                RecipeIngredient recipeIngredient = new RecipeIngredient(recipe, ingredientId);
+                RecipeIngredient recipeIngredient = new RecipeIngredient();
+                recipeIngredient.setRecipe(recipe);
+                recipeIngredient.setIngredientId(ingredientId);
                 recipe.addIngredient(recipeIngredient);
             }
         }
@@ -74,7 +79,9 @@ public class RecipeService {
         recipe.getRecipeIngredients().clear();
         if (recipeDTO.getIngredientIds() != null) {
             for (Integer ingredientId : recipeDTO.getIngredientIds()) {
-                RecipeIngredient recipeIngredient = new RecipeIngredient(recipe, ingredientId);
+                RecipeIngredient recipeIngredient = new RecipeIngredient();
+                recipeIngredient.setRecipe(recipe);
+                recipeIngredient.setIngredientId(ingredientId);
                 recipe.addIngredient(recipeIngredient);
             }
         }
@@ -90,6 +97,12 @@ public class RecipeService {
             throw new RuntimeException("Recipe not found with id: " + id);
         }
         recipeRepository.deleteById(id);
+    }
+
+    // Delete all recipes
+    @Transactional
+    public void deleteAllRecipes() {
+        recipeRepository.deleteAll();
     }
 
     // Search recipes by title
@@ -121,18 +134,96 @@ public class RecipeService {
     }
 
     // Helper method to convert Entity to DTO
+    // Helper method to convert Entity to DTO
     private RecipeDTO convertToDTO(Recipe recipe) {
         List<Integer> ingredientIds = recipe.getRecipeIngredients().stream()
                 .map(RecipeIngredient::getIngredientId)
                 .collect(Collectors.toList());
 
-        return new RecipeDTO(
+        List<com.scan_n_eat.recipe_service.dto.RecipeIngredientDTO> recipeIngredients = recipe.getRecipeIngredients().stream()
+                .map(ri -> new com.scan_n_eat.recipe_service.dto.RecipeIngredientDTO(ri.getIngredientId(), ri.getQuantity()))
+                .collect(Collectors.toList());
+
+        RecipeDTO dto = new RecipeDTO(
                 recipe.getId(),
                 recipe.getTitle(),
                 recipe.getInstructions(),
                 recipe.getPrepTime(),
                 recipe.getServings(),
                 recipe.getImageUrl(),
-                ingredientIds);
+                recipeIngredients,
+                recipe.getPrice());
+
+        // We can set ingredientIds using the setter if needed, or rely on recipeIngredients
+        dto.setIngredientIds(ingredientIds);
+        return dto;
+    }
+
+    // Saved Recipes functionality
+    @Transactional
+    public com.scan_n_eat.recipe_service.dto.SaveRecipeResponse toggleSaveRecipe(Long userId, UUID recipeId) {
+        Recipe recipe = recipeRepository.findById(recipeId)
+                .orElseThrow(() -> new RuntimeException("Recipe not found with id: " + recipeId));
+
+        java.util.Optional<com.scan_n_eat.recipe_service.entity.SavedRecipe> existing = 
+                savedRecipeRepository.findByUserIdAndRecipeId(userId, recipeId);
+
+        if (existing.isPresent()) {
+            // Unsave
+            savedRecipeRepository.delete(existing.get());
+            return new com.scan_n_eat.recipe_service.dto.SaveRecipeResponse(false, "Recipe removed from saved list");
+        } else {
+            // Save
+            com.scan_n_eat.recipe_service.entity.SavedRecipe savedRecipe = 
+                    new com.scan_n_eat.recipe_service.entity.SavedRecipe(userId, recipe);
+            savedRecipeRepository.save(savedRecipe);
+            return new com.scan_n_eat.recipe_service.dto.SaveRecipeResponse(true, "Recipe saved successfully");
+        }
+    }
+
+    public List<RecipeDTO> getSavedRecipes(Long userId) {
+        List<com.scan_n_eat.recipe_service.entity.SavedRecipe> savedRecipes = 
+                savedRecipeRepository.findByUserId(userId);
+        
+        return savedRecipes.stream()
+                .map(sr -> convertToDTO(sr.getRecipe()))
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    public boolean isRecipeSaved(Long userId, UUID recipeId) {
+        return savedRecipeRepository.existsByUserIdAndRecipeId(userId, recipeId);
+    }
+
+    // Trending recipes (most saved in last 7 days)
+    public List<RecipeDTO> getTrendingRecipes(int limit) {
+        java.time.LocalDateTime sevenDaysAgo = java.time.LocalDateTime.now().minusDays(7);
+        List<Object[]> trending = savedRecipeRepository.findMostSavedRecipesSince(sevenDaysAgo);
+
+        // Get recipe IDs from the result
+        List<UUID> trendingIds = trending.stream()
+                .limit(limit)
+                .map(row -> (UUID) row[0])
+                .collect(java.util.stream.Collectors.toList());
+
+        // Fetch recipes
+        List<Recipe> trendingRecipes = recipeRepository.findAllById(trendingIds);
+
+        // If not enough trending, add random recipes
+        if (trendingRecipes.size() < limit) {
+            int needed = limit - trendingRecipes.size();
+            List<Recipe> allRecipes = recipeRepository.findAll();
+            java.util.Collections.shuffle(allRecipes);
+            
+            for (Recipe recipe : allRecipes) {
+                if (!trendingRecipes.contains(recipe)) {
+                    trendingRecipes.add(recipe);
+                    if (trendingRecipes.size() >= limit) break;
+                }
+            }
+        }
+
+        return trendingRecipes.stream()
+                .map(this::convertToDTO)
+                .collect(java.util.stream.Collectors.toList());
     }
 }

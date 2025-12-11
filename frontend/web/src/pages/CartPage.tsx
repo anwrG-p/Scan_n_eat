@@ -1,10 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card } from '../components/ui/Card';
 import { useCartStore } from '../store/cartStore';
 import { Button } from '../components/ui/Button';
+import { useNavigate } from 'react-router-dom';
 
 export const CartPage: React.FC = () => {
-    const { items, formattedTotal, clearCart } = useCartStore();
+    const { items, formattedTotal, clearCart, checkout } = useCartStore();
+    const [isCheckingOut, setIsCheckingOut] = useState(false);
+    const navigate = useNavigate();
+
+    const handleCheckout = async () => {
+        if (!window.confirm("Proceed to checkout?")) return;
+        
+        setIsCheckingOut(true);
+        try {
+            await checkout();
+            alert('Order placed successfully!');
+            navigate('/orders'); // Redirect to order history
+        } catch (error: any) {
+            alert(error.message || 'Checkout failed. Please try again.');
+        } finally {
+            setIsCheckingOut(false);
+        }
+    };
 
     return (
         <div>
@@ -39,11 +57,15 @@ export const CartPage: React.FC = () => {
                             <span>Total</span>
                             <span>${formattedTotal()}</span>
                         </div>
-                        <Button className="w-full mb-2" disabled={items.length === 0}>
-                            Checkout
+                        <Button 
+                            className="w-full mb-2" 
+                            disabled={items.length === 0 || isCheckingOut}
+                            onClick={handleCheckout}
+                        >
+                            {isCheckingOut ? 'Processing...' : 'Checkout'}
                         </Button>
                         {items.length > 0 && (
-                            <Button variant="secondary" className="w-full" onClick={clearCart}>
+                            <Button variant="secondary" className="w-full" onClick={clearCart} disabled={isCheckingOut}>
                                 Clear Cart
                             </Button>
                         )}

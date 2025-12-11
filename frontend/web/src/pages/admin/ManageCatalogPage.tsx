@@ -27,6 +27,40 @@ export const ManageCatalogPage: React.FC = () => {
         }
     };
 
+    const [newDish, setNewDish] = useState({
+        title: '',
+        description: '',
+        price: '0.00',
+        imageUrl: '',
+        instructions: '',
+        prepTime: '20 mins',
+        active: true
+    });
+
+    const handleAddDish = async () => {
+        try {
+            await apiClient.post('/recipes', {
+                ...newDish,
+                price: parseFloat(newDish.price)
+            });
+            alert('Dish added successfully!');
+            setShowForm(false);
+            setNewDish({
+                title: '',
+                description: '',
+                price: '0.00',
+                imageUrl: '',
+                instructions: '',
+                prepTime: '20 mins',
+                active: true
+            });
+            // Ideally refresh catalog here
+        } catch (error) {
+            console.error('Failed to add dish:', error);
+            alert('Failed to add dish');
+        }
+    };
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -45,18 +79,48 @@ export const ManageCatalogPage: React.FC = () => {
                 <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
                     <h2 className="text-lg font-bold mb-4">Add New Dish</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <Input label="Dish Name" placeholder="e.g. Spaghetti Carbonara" />
-                        <Input label="Price ($)" type="number" placeholder="0.00" />
+                        <Input 
+                            label="Dish Name" 
+                            value={newDish.title}
+                            onChange={(e) => setNewDish({...newDish, title: e.target.value})}
+                            placeholder="e.g. Spaghetti Carbonara" 
+                        />
+                        <Input 
+                            label="Price ($)" 
+                            type="number" 
+                            step="0.01"
+                            value={newDish.price}
+                            onChange={(e) => setNewDish({...newDish, price: e.target.value})}
+                            placeholder="0.00" 
+                        />
                         <div className="md:col-span-2">
-                            <Input label="Description" placeholder="Brief description..." />
+                            <Input 
+                                label="Description" 
+                                value={newDish.description}
+                                onChange={(e) => setNewDish({...newDish, description: e.target.value})}
+                                placeholder="Brief description..." 
+                            />
                         </div>
                         <div className="md:col-span-2">
-                            <Input label="Image URL" placeholder="https://..." />
+                            <Input 
+                                label="Image URL" 
+                                value={newDish.imageUrl}
+                                onChange={(e) => setNewDish({...newDish, imageUrl: e.target.value})}
+                                placeholder="https://..." 
+                            />
+                        </div>
+                        <div className="md:col-span-2">
+                            <Input 
+                                label="Instructions" 
+                                value={newDish.instructions}
+                                onChange={(e) => setNewDish({...newDish, instructions: e.target.value})}
+                                placeholder="Cooking steps..." 
+                            />
                         </div>
                     </div>
                     <div className="flex justify-end space-x-2">
                         <Button variant="secondary" onClick={() => setShowForm(false)}>Cancel</Button>
-                        <Button>Save Dish</Button>
+                        <Button onClick={handleAddDish}>Save Dish</Button>
                     </div>
                 </div>
             )}

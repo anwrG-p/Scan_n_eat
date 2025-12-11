@@ -3,6 +3,7 @@ export interface User {
     name: string;
     email: string;
     role: 'user' | 'admin';
+    userId?: string; // Add optional userId for consistency
 }
 
 export interface AuthResponse {
@@ -29,16 +30,31 @@ export interface Dish {
     category?: string;
 }
 
+export interface IngredientDetails {
+    id: number;
+    name: string;
+    calories: number;
+    averagePrice: number;
+}
+
+export interface RecipeIngredient {
+    ingredientId: number;
+    quantity: string;
+    // Enriched data from ingredients-service
+    details?: IngredientDetails;
+}
+
 export interface Recipe {
     id: string;
     title: string;
-    image: string;
-    usedIngredientCount: number;
-    missedIngredientCount: number;
-    missedIngredients: Ingredient[];
-    usedIngredients: Ingredient[];
+    instructions: string;
+    imageUrl: string;
+    prepTime: string;
+    servings: number;
+    recipeIngredients: RecipeIngredient[];
 }
 
 export interface CartItem extends Dish {
     cartQuantity: number;
+    title?: string;
 }

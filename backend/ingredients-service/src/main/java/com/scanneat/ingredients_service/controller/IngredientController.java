@@ -24,7 +24,7 @@ public class IngredientController {
         return service.getAllIngredients();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:\\d+}")
     public IngredientDto getById(@PathVariable Long id) {
         return service.getIngredientById(id);
     }
@@ -32,5 +32,10 @@ public class IngredientController {
     @PostMapping("/sync")
     public IngredientDto sync(@RequestParam String name) {
         return service.syncIngredient(name);
+    }
+
+    @PostMapping("/batch")
+    public List<IngredientDto> getBatch(@RequestBody List<Long> ids) {
+        return service.getIngredientsByIds(ids);
     }
 }

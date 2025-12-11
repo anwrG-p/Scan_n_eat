@@ -37,10 +37,10 @@ export const Footer: React.FC = () => {
 
                     {/* Links Row */}
                     <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-500">
-                        <Link to="#" className="hover:text-gray-900 transition-colors">FAQ</Link>
-                        <Link to="#" className="hover:text-gray-900 transition-colors">Help</Link>
-                        <Link to="#" className="hover:text-gray-900 transition-colors">Terms and conditions</Link>
-                        <Link to="#" className="hover:text-gray-900 transition-colors">About</Link>
+                        <Link to="/faq" className="hover:text-gray-900 transition-colors">FAQ</Link>
+                        <Link to="/help" className="hover:text-gray-900 transition-colors">Help</Link>
+                        <Link to="/terms" className="hover:text-gray-900 transition-colors">Terms and conditions</Link>
+                        <Link to="/about" className="hover:text-gray-900 transition-colors">About</Link>
                     </div>
                 </div>
             </div>

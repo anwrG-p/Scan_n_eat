@@ -12,21 +12,25 @@ public class RecipeIngredient {
     @EmbeddedId
     private RecipeIngredientId id = new RecipeIngredientId();
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("recipeId")
     @JoinColumn(name = "recipe_id")
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private Recipe recipe;
 
     @Column(name = "ingredient_id", insertable = false, updatable = false)
     private Integer ingredientId;
 
+    private String quantity;
+
     // Constructors
     public RecipeIngredient() {
     }
 
-    public RecipeIngredient(Recipe recipe, Integer ingredientId) {
+    public RecipeIngredient(Recipe recipe, Integer ingredientId, String quantity) {
         this.recipe = recipe;
         this.ingredientId = ingredientId;
+        this.quantity = quantity;
         this.id.setRecipeId(recipe.getId());
         this.id.setIngredientId(ingredientId);
     }
@@ -58,6 +62,14 @@ public class RecipeIngredient {
     public void setIngredientId(Integer ingredientId) {
         this.ingredientId = ingredientId;
         this.id.setIngredientId(ingredientId);
+    }
+
+    public String getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(String quantity) {
+        this.quantity = quantity;
     }
 
     @Override
