@@ -34,7 +34,7 @@ export const useInventoryStore = create<InventoryState>()((set) => ({
                 // Should probably redirect or handle unauth
                 return;
             }
-            
+
             // We need to pass user ID header manually as per our simple backend design
             const config = {
                 headers: {
@@ -43,6 +43,7 @@ export const useInventoryStore = create<InventoryState>()((set) => ({
             };
 
             const { data } = await apiClient.get<InventoryItem[]>('/inventory', config);
+            console.log('DEBUG: Fetched inventory:', data);
             set({ inventory: data, isLoading: false });
         } catch (error: any) {
             set({ error: error.message || 'Failed to fetch inventory', isLoading: false });
@@ -63,7 +64,7 @@ export const useInventoryStore = create<InventoryState>()((set) => ({
 
             const { data } = await apiClient.post<InventoryItem>('/inventory', item, config);
             set(state => ({
-                inventory: [...state.inventory, data],
+                inventory: [...state.inventory, { ...data, name: data.name || item.name }], // Keep name if backend doesn't return it
                 isLoading: false
             }));
         } catch (error: any) {
@@ -74,11 +75,11 @@ export const useInventoryStore = create<InventoryState>()((set) => ({
     removeFromInventory: async (id: string) => {
         set({ isLoading: true, error: null });
         try {
-             // We optimise optimistically for UI speed or wait? Let's wait for confirmation to be safe
-             // But for delete, we need the header? Actually Controller removeItem params doesn't check header for ID match
-             // But robust design should. Backend just deletes by ID.
+            // We optimise optimistically for UI speed or wait? Let's wait for confirmation to be safe
+            // But for delete, we need the header? Actually Controller removeItem params doesn't check header for ID match
+            // But robust design should. Backend just deletes by ID.
             await apiClient.delete(`/inventory/${id}`);
-            
+
             set(state => ({
                 inventory: state.inventory.filter(item => item.id !== id),
                 isLoading: false

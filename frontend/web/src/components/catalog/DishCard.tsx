@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import type { Dish } from '../../types';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
-import { Plus } from 'lucide-react';
+import { Plus, Heart } from 'lucide-react';
 import { useCartStore } from '../../store/cartStore';
+import { useSavedRecipesStore } from '../../store/savedRecipesStore';
 
 interface DishCardProps {
     dish: Dish;
@@ -13,6 +14,8 @@ interface DishCardProps {
 export const DishCard: React.FC<DishCardProps> = ({ dish }) => {
     const navigate = useNavigate();
     const { addItem } = useCartStore();
+    const { savedRecipes, toggleSaveRecipe } = useSavedRecipesStore();
+    const isSaved = savedRecipes.some(r => r.id === dish.id);
 
     const handleCardClick = () => {
         navigate(`/catalog/${dish.id}`);
@@ -42,10 +45,21 @@ export const DishCard: React.FC<DishCardProps> = ({ dish }) => {
                 <h3 className="text-lg font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">{dish.name}</h3>
                 <p className="text-sm text-gray-500 mb-4 line-clamp-2 flex-grow">{dish.description}</p>
 
-                <div className="flex items-center justify-between mt-auto">
-                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                        {dish.ingredients.length} ingredients
-                    </span>
+                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                    {dish.ingredients.length} ingredients
+                </span>
+                <div className="flex gap-2">
+                    <Button
+                        variant="secondary"
+                        className="!px-3 !py-1 text-sm"
+                        onClick={async (e) => {
+                            e.stopPropagation();
+                            const result = await toggleSaveRecipe(dish.id);
+                            alert(result ? 'Recipe saved!' : 'Recipe removed!');
+                        }}
+                    >
+                        <Heart className={`w-4 h-4 ${isSaved ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} />
+                    </Button>
                     <Button
                         variant="primary"
                         className="!px-3 !py-1 text-sm"

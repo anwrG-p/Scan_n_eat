@@ -64,13 +64,13 @@ export const useCartStore = create<CartState>()(
                 }
 
                 const orderRequest = {
-                    userId: user.id || (user as any).userId,
+                    userId: user.userId, // Matches User interface in authStore/types
                     items: state.items.map(item => ({
-                        name: item.name || item.title, // handle potential name differences
+                        name: item.name,
                         quantity: item.cartQuantity,
                         price: item.price,
-                        recipeId: item.id
-                        // ingredientId not supported for direct cart items yet
+                        recipeId: item.id, // Map frontend 'id' to backend 'recipeId'
+                        ingredientId: null // Not used for recipe orders
                     }))
                 };
 

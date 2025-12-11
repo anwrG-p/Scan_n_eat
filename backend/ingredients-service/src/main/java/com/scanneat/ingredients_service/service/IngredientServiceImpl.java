@@ -5,6 +5,8 @@ import com.scanneat.ingredients_service.model.Ingredient;
 import com.scanneat.ingredients_service.repository.IngredientRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,6 +20,7 @@ public class IngredientServiceImpl implements IngredientService {
     private final OpenFoodFactsService openFoodFactsService;
 
     @Override
+    @CacheEvict(value = "all_ingredients", allEntries = true)
     public IngredientDto createIngredient(IngredientDto dto) {
         Ingredient ingredient = Ingredient.builder()
                 .name(dto.getName())
@@ -31,6 +34,7 @@ public class IngredientServiceImpl implements IngredientService {
     }
 
     @Override
+    @Cacheable("all_ingredients")
     public List<IngredientDto> getAllIngredients() {
         return repository.findAll()
                 .stream()
@@ -39,6 +43,7 @@ public class IngredientServiceImpl implements IngredientService {
     }
 
     @Override
+    @Cacheable(value = "ingredients", key = "#id")
     public IngredientDto getIngredientById(Long id) {
         Ingredient i = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Ingredient not found"));
@@ -47,20 +52,21 @@ public class IngredientServiceImpl implements IngredientService {
     }
 
     @Override
+    @CacheEvict(value = "all_ingredients", allEntries = true)
     public IngredientDto syncIngredient(String name) {
         return repository.findByNameIgnoreCase(name)
                 .map(this::mapToDto)
                 .orElseGet(() -> {
                     // Fetch from Open Food Facts
                     var info = openFoodFactsService.fetchIngredientInfo(name);
-                    
+
                     Ingredient i = Ingredient.builder()
                             .name(name)
                             .calories(info.map(OpenFoodFactsService.IngredientInfo::calories).orElse(0.0))
                             .averagePrice(info.map(OpenFoodFactsService.IngredientInfo::averagePrice).orElse(0.0))
                             .externalId(info.map(OpenFoodFactsService.IngredientInfo::externalId).orElse(null))
                             .build();
-                            
+
                     try {
                         Ingredient saved = repository.save(i);
                         return mapToDto(saved);
@@ -68,7 +74,8 @@ public class IngredientServiceImpl implements IngredientService {
                         // Concurrency issue: ingredient was created by another thread
                         return repository.findByNameIgnoreCase(name)
                                 .map(this::mapToDto)
-                                .orElseThrow(() -> new RuntimeException("Failed to retrieve ingredient after constraint violation: " + name));
+                                .orElseThrow(() -> new RuntimeException(
+                                        "Failed to retrieve ingredient after constraint violation: " + name));
                     }
                 });
     }

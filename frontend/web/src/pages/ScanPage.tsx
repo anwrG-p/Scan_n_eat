@@ -3,12 +3,18 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Upload, Camera, Image as ImageIcon } from 'lucide-react';
 
+// import { apiClient } from '../api/client'; // Commented out to fix unused var error
+import { useInventoryStore } from '../store/inventoryStore';
+
 export const ScanPage: React.FC = () => {
     const [preview, setPreview] = useState<string | null>(null);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const { addToInventory } = useInventoryStore();
 
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            setSelectedFile(file);
             const reader = new FileReader();
             reader.onloadend = () => {
                 setPreview(reader.result as string);
@@ -18,7 +24,43 @@ export const ScanPage: React.FC = () => {
     };
 
     const handleCamera = () => {
-        alert("Camera functionality requires HTTPS and device permission. (Mocking camera open)");
+        alert("Camera functionality requires HTTPS and device permission.");
+    };
+
+    const handleProcessInvoice = async () => {
+        if (!selectedFile) return;
+
+        try {
+            // MOCK BEHAVIOR REQUESTED BY USER
+            // Mocking the OCR response to ensure items are added
+            const mockItems = [
+                { name: 'Tomatoes', quantity: 2, unit: 'pcs' },
+                { name: 'Cheese', quantity: 1, unit: 'block' },
+                { name: 'Peppers', quantity: 1, unit: 'kg' }
+            ];
+
+            const items = mockItems;
+
+            alert(`Detected ${items.length} items! Adding to inventory...`);
+
+            // Add each item to inventory
+            for (const item of items) {
+                await addToInventory({
+                    ingredientId: 0,
+                    name: item.name,
+                    quantity: item.quantity,
+                    unit: item.unit
+                });
+            }
+
+            await useInventoryStore.getState().fetchInventory(); // Force refresh from backend
+            alert('Items added to inventory!');
+            setPreview(null);
+            setSelectedFile(null);
+        } catch (error: any) {
+            console.error('Scan failed:', error);
+            alert('Failed to process invoice: ' + (error.response?.data?.error || error.message));
+        }
     };
 
     return (
@@ -73,7 +115,7 @@ export const ScanPage: React.FC = () => {
                     </div>
                     <div className="mt-4 flex justify-end gap-3">
                         <Button variant="secondary" onClick={() => setPreview(null)}>Retake/Cancel</Button>
-                        <Button onClick={() => alert("Processing invoice... (Mock)")}>Process Receipt</Button>
+                        <Button onClick={handleProcessInvoice}>Process Receipt</Button>
                     </div>
                 </Card>
             ) : (

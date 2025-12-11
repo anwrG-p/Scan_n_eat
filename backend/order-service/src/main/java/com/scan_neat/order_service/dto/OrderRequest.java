@@ -16,6 +16,6 @@ public class OrderRequest {
         private int quantity;
         private BigDecimal price;
         private UUID recipeId;
-        private UUID ingredientId;
+        private Long ingredientId;
     }
 }

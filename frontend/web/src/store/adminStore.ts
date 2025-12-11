@@ -22,7 +22,7 @@ interface AdminState {
     logs: any[];
     isLoading: boolean;
     error: string | null;
-    
+
     fetchStats: () => Promise<void>;
     fetchUsers: () => Promise<void>;
     fetchLogs: () => Promise<void>;
@@ -30,6 +30,7 @@ interface AdminState {
     addRecipe: (recipe: any) => Promise<void>;
     deleteUser: (userId: string) => Promise<void>;
     updateUserRole: (userId: string, newRole: string) => Promise<void>;
+    populateRecipes: () => Promise<void>;
 }
 
 // API_BASE is handled by client
@@ -117,6 +118,16 @@ export const useAdminStore = create<AdminState>((set, get) => ({
             await get().fetchUsers();
         } catch (error: any) {
             console.error('Failed to update user role:', error);
+            throw error;
+        }
+    },
+
+    populateRecipes: async () => {
+        try {
+            await apiClient.post('/recipes/populate');
+            await get().fetchStats(); // Refresh stats to show new recipe count
+        } catch (error: any) {
+            console.error('Failed to populate recipes:', error);
             throw error;
         }
     },

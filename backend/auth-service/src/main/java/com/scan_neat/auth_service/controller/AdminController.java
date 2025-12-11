@@ -27,20 +27,29 @@ public class AdminController {
     @GetMapping("/stats")
     public ResponseEntity<Map<String, Object>> getStats() {
         Map<String, Object> stats = new HashMap<>();
-        
+
         // Total users
         long totalUsers = userRepository.count();
         stats.put("totalUsers", totalUsers);
-        
-        // TODO: Get recipe count from recipe-service via RestTemplate
-        stats.put("totalRecipes", 0);
-        
+
+        // Get recipe count from recipe-service via RestTemplate
+        try {
+            // Using service name 'recipe-service' resolved by Docker DNS
+            String recipeServiceUrl = "http://recipe-service:8080/api/recipes/count";
+            org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+            Long recipeCount = restTemplate.getForObject(recipeServiceUrl, Long.class);
+            stats.put("totalRecipes", recipeCount != null ? recipeCount : 0);
+        } catch (Exception e) {
+            System.err.println("Error fetching recipe count: " + e.getMessage());
+            stats.put("totalRecipes", 0); // Fallback
+        }
+
         // TODO: Get orders today from order-service
         stats.put("ordersToday", 0);
-        
+
         // System status - simple health check
         stats.put("systemStatus", "healthy");
-        
+
         return ResponseEntity.ok(stats);
     }
 
@@ -57,7 +66,7 @@ public class AdminController {
         User newUser = new User();
         newUser.setUsername(request.get("username"));
         newUser.setPasswordHash(passwordEncoder.encode(request.get("password")));
-        
+
         // Default role is USER, but can be set if provided (and authorized)
         if (request.containsKey("role")) {
             try {

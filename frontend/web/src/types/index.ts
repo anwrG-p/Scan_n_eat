@@ -14,6 +14,8 @@ export interface AuthResponse {
 }
 
 export interface Ingredient {
+    id?: string; // Optional for frontend-generated or mock items
+    ingredientId?: number; // Matches backend ID
     name: string;
     quantity: number;
     unit: string;

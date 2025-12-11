@@ -18,11 +18,11 @@ public class OrderItem {
     private Long id;
 
     private UUID recipeId; // Can be null if it's a standalone ingredient
-    private UUID ingredientId; // Can be null if it's a full recipe order (simplified)
-    
+    private Long ingredientId; // Can be null if it's a full recipe order (simplified)
+
     // For simplicity, we just store the name and snapshot of the price
     private String name;
-    
+
     private Integer quantity;
     private BigDecimal pricePerUnit;
 }

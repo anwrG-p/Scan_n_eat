@@ -18,18 +18,25 @@ public class InventoryController {
 
     @GetMapping
     public ResponseEntity<List<InventoryItem>> getUserInventory(@RequestHeader("X-User-Id") UUID userId) {
-        // In a real microservice architecture, the Gateway or Auth Service would pass the Context/User ID header.
-        // For simplicity, we assume we might get it from a header or we might need to adjust client to send it.
-        // Given the current simple setup, the frontend might not be sending X-User-Id yet. 
+        // In a real microservice architecture, the Gateway or Auth Service would pass
+        // the Context/User ID header.
+        // For simplicity, we assume we might get it from a header or we might need to
+        // adjust client to send it.
+        // Given the current simple setup, the frontend might not be sending X-User-Id
+        // yet.
         // We'll need to update the client or Gateway to forward this information.
         // For now, let's assume the Gateway extracts it from the JWT and passes it.
         return ResponseEntity.ok(service.getUserInventory(userId));
     }
 
     @PostMapping
-    public ResponseEntity<InventoryItem> addItem(@RequestBody InventoryItem item, @RequestHeader("X-User-Id") UUID userId) {
+    public ResponseEntity<InventoryItem> addItem(@RequestBody InventoryItem item,
+            @RequestHeader("X-User-Id") UUID userId) {
+        System.out.println("DEBUG: Received addItem request: " + item);
         item.setUserId(userId);
-        return ResponseEntity.ok(service.addItem(item));
+        InventoryItem saved = service.addItem(item);
+        System.out.println("DEBUG: Saved item: " + saved);
+        return ResponseEntity.ok(saved);
     }
 
     @DeleteMapping("/{id}")

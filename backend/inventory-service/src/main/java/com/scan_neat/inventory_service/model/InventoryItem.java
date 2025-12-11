@@ -27,6 +27,9 @@ public class InventoryItem {
     @Column(name = "ingredient_id", nullable = false)
     private Integer ingredientId;
 
+    @Column(name = "name")
+    private String name;
+
     @Column(nullable = false)
     private BigDecimal quantity;
 

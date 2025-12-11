@@ -8,7 +8,7 @@ import { Plus, Trash2, Calendar, Scale, Package } from 'lucide-react';
 export const IngredientsPage: React.FC = () => {
     // Global Catalog (for looking up IDs)
     const { scannedIngredients, fetchIngredients } = useIngredientsStore();
-    
+
     // User Inventory
     const { inventory, fetchInventory, addToInventory, removeFromInventory } = useInventoryStore();
 
@@ -25,11 +25,11 @@ export const IngredientsPage: React.FC = () => {
 
     const handleAdd = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         // Simple lookup for Ingredient ID based on name
         // In a real app, use a proper Search/Dropdown
         const foundIngredient = scannedIngredients.find(ing => ing.name.toLowerCase() === name.toLowerCase());
-        
+
         if (!foundIngredient) {
             alert(`Ingredient '${name}' not found in catalog. Please check spelling or choose from global list.`);
             return;
@@ -39,7 +39,7 @@ export const IngredientsPage: React.FC = () => {
         // types/index.ts shows Ingredient interface doesn't have ID!
         // We will mock ID as 1 for now if missing, or we need to fix Ingredient type.
         // Assuming backend returns it but frontend type misses it.
-        const ingredientId = (foundIngredient as any).id || 1; 
+        const ingredientId = (foundIngredient as any).id || 1;
 
         await addToInventory({
             ingredientId: ingredientId,
@@ -72,17 +72,36 @@ export const IngredientsPage: React.FC = () => {
                             Add New Ingredient
                         </h2>
                         <form onSubmit={handleAdd} className="space-y-4">
-                            <div>
+                            <div className="relative">
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Ingredient Name</label>
                                 <input
                                     type="text"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
                                     className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                                    placeholder="e.g. Tomato Sauce"
+                                    placeholder="Search ingredient (e.g. Tomato)..."
                                     required
+                                    autoComplete="off"
                                 />
-                                <p className="text-xs text-gray-500 mt-1">Must match catalog name (case-insensitive)</p>
+                                {name.length > 1 && (
+                                    <div className="absolute z-10 w-full bg-white border border-gray-100 rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto">
+                                        {scannedIngredients
+                                            .filter(ing => ing.name.toLowerCase().includes(name.toLowerCase()))
+                                            .slice(0, 5)
+                                            .map(ing => (
+                                                <div
+                                                    key={ing.id || Math.random()}
+                                                    className="px-4 py-2 hover:bg-blue-50 cursor-pointer text-sm text-gray-700"
+                                                    onClick={() => {
+                                                        setName(ing.name);
+                                                        // Optionally set other fields if available
+                                                    }}
+                                                >
+                                                    {ing.name}
+                                                </div>
+                                            ))}
+                                    </div>
+                                )}
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">

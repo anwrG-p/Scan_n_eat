@@ -138,8 +138,14 @@ public class RecipeController {
         }
     }
 
+    // GET /api/recipes/count - Get total recipe count
+    @GetMapping("/count")
+    public ResponseEntity<Long> getRecipeCount() {
+        return ResponseEntity.ok(recipeDataService.getRecipeCount());
+    }
+
     // Saved Recipes Endpoints
-    
+
     // POST /api/recipes/{id}/save - Toggle save recipe for user
     @PostMapping("/{id}/save")
     public ResponseEntity<com.scan_n_eat.recipe_service.dto.SaveRecipeResponse> toggleSaveRecipe(

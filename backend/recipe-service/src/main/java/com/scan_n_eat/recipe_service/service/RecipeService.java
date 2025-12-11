@@ -5,6 +5,8 @@ import com.scan_n_eat.recipe_service.entity.Recipe;
 import com.scan_n_eat.recipe_service.entity.RecipeIngredient;
 import com.scan_n_eat.recipe_service.repository.RecipeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,7 +22,7 @@ public class RecipeService {
 
     @Autowired
     public RecipeService(RecipeRepository recipeRepository,
-                         com.scan_n_eat.recipe_service.repository.SavedRecipeRepository savedRecipeRepository) {
+            com.scan_n_eat.recipe_service.repository.SavedRecipeRepository savedRecipeRepository) {
         this.recipeRepository = recipeRepository;
         this.savedRecipeRepository = savedRecipeRepository;
     }
@@ -33,6 +35,7 @@ public class RecipeService {
     }
 
     // Get recipe by ID
+    @Cacheable(value = "recipes", key = "#id")
     public RecipeDTO getRecipeById(UUID id) {
         Recipe recipe = recipeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Recipe not found with id: " + id));
@@ -41,6 +44,7 @@ public class RecipeService {
 
     // Create new recipe
     @Transactional
+    @CacheEvict(value = "recipes", allEntries = true)
     public RecipeDTO createRecipe(RecipeDTO recipeDTO) {
         Recipe recipe = new Recipe(
                 recipeDTO.getTitle(),
@@ -65,6 +69,7 @@ public class RecipeService {
 
     // Update recipe
     @Transactional
+    @CacheEvict(value = "recipes", allEntries = true)
     public RecipeDTO updateRecipe(UUID id, RecipeDTO recipeDTO) {
         Recipe recipe = recipeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Recipe not found with id: " + id));
@@ -92,6 +97,7 @@ public class RecipeService {
 
     // Delete recipe
     @Transactional
+    @CacheEvict(value = "recipes", allEntries = true)
     public void deleteRecipe(UUID id) {
         if (!recipeRepository.existsById(id)) {
             throw new RuntimeException("Recipe not found with id: " + id);
@@ -101,6 +107,7 @@ public class RecipeService {
 
     // Delete all recipes
     @Transactional
+    @CacheEvict(value = "recipes", allEntries = true)
     public void deleteAllRecipes() {
         recipeRepository.deleteAll();
     }
@@ -140,8 +147,10 @@ public class RecipeService {
                 .map(RecipeIngredient::getIngredientId)
                 .collect(Collectors.toList());
 
-        List<com.scan_n_eat.recipe_service.dto.RecipeIngredientDTO> recipeIngredients = recipe.getRecipeIngredients().stream()
-                .map(ri -> new com.scan_n_eat.recipe_service.dto.RecipeIngredientDTO(ri.getIngredientId(), ri.getQuantity()))
+        List<com.scan_n_eat.recipe_service.dto.RecipeIngredientDTO> recipeIngredients = recipe.getRecipeIngredients()
+                .stream()
+                .map(ri -> new com.scan_n_eat.recipe_service.dto.RecipeIngredientDTO(ri.getIngredientId(),
+                        ri.getQuantity()))
                 .collect(Collectors.toList());
 
         RecipeDTO dto = new RecipeDTO(
@@ -154,7 +163,8 @@ public class RecipeService {
                 recipeIngredients,
                 recipe.getPrice());
 
-        // We can set ingredientIds using the setter if needed, or rely on recipeIngredients
+        // We can set ingredientIds using the setter if needed, or rely on
+        // recipeIngredients
         dto.setIngredientIds(ingredientIds);
         return dto;
     }
@@ -165,8 +175,8 @@ public class RecipeService {
         Recipe recipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new RuntimeException("Recipe not found with id: " + recipeId));
 
-        java.util.Optional<com.scan_n_eat.recipe_service.entity.SavedRecipe> existing = 
-                savedRecipeRepository.findByUserIdAndRecipeId(userId, recipeId);
+        java.util.Optional<com.scan_n_eat.recipe_service.entity.SavedRecipe> existing = savedRecipeRepository
+                .findByUserIdAndRecipeId(userId, recipeId);
 
         if (existing.isPresent()) {
             // Unsave
@@ -174,17 +184,17 @@ public class RecipeService {
             return new com.scan_n_eat.recipe_service.dto.SaveRecipeResponse(false, "Recipe removed from saved list");
         } else {
             // Save
-            com.scan_n_eat.recipe_service.entity.SavedRecipe savedRecipe = 
-                    new com.scan_n_eat.recipe_service.entity.SavedRecipe(userId, recipe);
+            com.scan_n_eat.recipe_service.entity.SavedRecipe savedRecipe = new com.scan_n_eat.recipe_service.entity.SavedRecipe(
+                    userId, recipe);
             savedRecipeRepository.save(savedRecipe);
             return new com.scan_n_eat.recipe_service.dto.SaveRecipeResponse(true, "Recipe saved successfully");
         }
     }
 
     public List<RecipeDTO> getSavedRecipes(Long userId) {
-        List<com.scan_n_eat.recipe_service.entity.SavedRecipe> savedRecipes = 
-                savedRecipeRepository.findByUserId(userId);
-        
+        List<com.scan_n_eat.recipe_service.entity.SavedRecipe> savedRecipes = savedRecipeRepository
+                .findByUserId(userId);
+
         return savedRecipes.stream()
                 .map(sr -> convertToDTO(sr.getRecipe()))
                 .collect(java.util.stream.Collectors.toList());
@@ -213,11 +223,12 @@ public class RecipeService {
             int needed = limit - trendingRecipes.size();
             List<Recipe> allRecipes = recipeRepository.findAll();
             java.util.Collections.shuffle(allRecipes);
-            
+
             for (Recipe recipe : allRecipes) {
                 if (!trendingRecipes.contains(recipe)) {
                     trendingRecipes.add(recipe);
-                    if (trendingRecipes.size() >= limit) break;
+                    if (trendingRecipes.size() >= limit)
+                        break;
                 }
             }
         }

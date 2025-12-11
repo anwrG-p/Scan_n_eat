@@ -18,7 +18,7 @@ export const useCatalogStore = create<CatalogState>((set) => ({
         try {
             // Call Recipe Service
             const { data } = await apiClient.get<any>('/recipes');
-            
+
             // Map RecipeDTO to Frontend Dish
             // Ensure data is array; it might be wrapped or empty
             const recipeList = Array.isArray(data) ? data : (data.content || []);
@@ -29,7 +29,7 @@ export const useCatalogStore = create<CatalogState>((set) => ({
                 description: recipe.instructions || 'No description available',
                 price: recipe.price || 0, // Use real price from backend calculation
                 image_url: recipe.imageUrl || 'https://via.placeholder.com/400',
-                ingredients: [], // IDs are numbers, names not available without extra calls
+                ingredients: recipe.recipeIngredients ? recipe.recipeIngredients.map((ri: any) => `Ingredient ${ri.ingredientId}`) : [],
                 category: 'Main Course'
             }));
 

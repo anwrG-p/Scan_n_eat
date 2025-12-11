@@ -4,6 +4,7 @@ import { Search, Send, Lock, ChevronRight } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useLanguageStore } from '../store/languageStore';
 import { useSavedRecipesStore } from '../store/savedRecipesStore';
+import { useInventoryStore } from '../store/inventoryStore';
 import { RecipeCard } from '../components/ui/RecipeCard';
 import { Button } from '../components/ui/Button'; // Assuming Button exists
 
@@ -93,10 +94,18 @@ export const HomePage: React.FC = () => {
 
     const t = translations[language] || translations.en;
 
-    // myIngredients mock data - keeping for now until inventory service is integrated
-    const myIngredients = [
-        "Tomatoes", "Eggs", "Milk", "Cheese", "Onions"
-    ];
+    // Fetch inventory
+    const { inventory, fetchInventory } = useInventoryStore();
+
+    useEffect(() => {
+        if (user) {
+            fetchInventory();
+        }
+    }, [user]);
+
+    // Format inventory for display (take first 5)
+    // Inventory items have 'name', if missing fallback to 'Item #{id}'
+    const myIngredients = inventory.slice(0, 5).map(item => item.name || `Item ${item.ingredientId}`);
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -164,8 +173,8 @@ export const HomePage: React.FC = () => {
                             savedRecipes.length > 0 ? (
                                 <ul className="space-y-3">
                                     {savedRecipes.map((recipe) => (
-                                        <li 
-                                            key={recipe.id} 
+                                        <li
+                                            key={recipe.id}
                                             onClick={() => navigate(`/catalog/${recipe.id}`)}
                                             className="flex items-center text-gray-600 hover:text-blue-600 cursor-pointer text-sm"
                                         >

@@ -19,6 +19,7 @@ import { AdminLayout } from './components/admin/AdminLayout';
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
 import { ManageCatalogPage } from './pages/admin/ManageCatalogPage';
 import { ManageUsersPage } from './pages/admin/ManageUsersPage';
+import { SavedRecipesPage } from './pages/SavedRecipesPage';
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
           <Route path="/catalog/:id" element={<DishDetailsPage />} />
           <Route path="/scan" element={<ScanPage />} />
           <Route path="/cart" element={<CartPage />} />
+          <Route path="/saved-recipes" element={<SavedRecipesPage />} />
           <Route path="/orders" element={<OrderHistoryPage />} />
           <Route path="/ingredients" element={<IngredientsPage />} />
           <Route path="/faq" element={<FAQPage />} />

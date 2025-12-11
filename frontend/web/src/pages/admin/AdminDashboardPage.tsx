@@ -16,33 +16,33 @@ export const AdminDashboardPage: React.FC = () => {
     }, [location.pathname]);
 
     const statsArray = [
-        { 
-            label: 'Total Users', 
-            value: stats?.totalUsers?.toString() || '0', 
-            icon: Users, 
-            color: 'text-blue-600', 
-            bg: 'bg-blue-100' 
+        {
+            label: 'Total Users',
+            value: stats?.totalUsers?.toString() || '0',
+            icon: Users,
+            color: 'text-blue-600',
+            bg: 'bg-blue-100'
         },
-        { 
-            label: 'Total Recipes', 
-            value: stats?.totalRecipes?.toString() || '0', 
-            icon: BookOpen, 
-            color: 'text-green-600', 
-            bg: 'bg-green-100' 
+        {
+            label: 'Total Recipes',
+            value: stats?.totalRecipes?.toString() || '0',
+            icon: BookOpen,
+            color: 'text-green-600',
+            bg: 'bg-green-100'
         },
-        { 
-            label: 'Orders Today', 
-            value: stats?.ordersToday?.toString() || '0', 
-            icon: ShoppingBag, 
-            color: 'text-purple-600', 
-            bg: 'bg-purple-100' 
+        {
+            label: 'Orders Today',
+            value: stats?.ordersToday?.toString() || '0',
+            icon: ShoppingBag,
+            color: 'text-purple-600',
+            bg: 'bg-purple-100'
         },
-        { 
-            label: 'System Status', 
-            value: stats?.systemStatus || 'Unknown', 
-            icon: Activity, 
-            color: 'text-emerald-600', 
-            bg: 'bg-emerald-100' 
+        {
+            label: 'System Status',
+            value: stats?.systemStatus || 'Unknown',
+            icon: Activity,
+            color: 'text-emerald-600',
+            bg: 'bg-emerald-100'
         },
     ];
 
@@ -75,23 +75,36 @@ export const AdminDashboardPage: React.FC = () => {
                     ))}
                 </div>
             )}
-            
+
             {/* Recent Activity / Management Sections */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <Card className="p-6">
                     <h2 className="text-lg font-bold text-gray-900 mb-4 h-8 flex items-center">Quick Actions</h2>
                     <div className="grid grid-cols-2 gap-4">
-                        <button 
+                        <button
                             onClick={() => navigate('/admin/users')}
                             className="p-4 border border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-blue-500 hover:text-blue-600 transition-colors text-center"
                         >
                             Add New User
                         </button>
-                        <button 
+                        <button
                             onClick={() => navigate('/admin/catalog')}
                             className="p-4 border border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-green-500 hover:text-green-600 transition-colors text-center"
                         >
                             Add New Recipe
+                        </button>
+                        <button
+                            onClick={async () => {
+                                try {
+                                    await useAdminStore.getState().populateRecipes();
+                                    alert('Database populated successfully!');
+                                } catch (e) {
+                                    alert('Failed to populate database.');
+                                }
+                            }}
+                            className="p-4 border border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-purple-500 hover:text-purple-600 transition-colors text-center"
+                        >
+                            Populate Database (Seed)
                         </button>
                     </div>
                 </Card>
