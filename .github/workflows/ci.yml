@@ -62,4 +62,4 @@ jobs:
       # --- DOCKER BUILD CHECK ---
       # Verifies that docker-compose build works
       - name: Verify Docker Compose Build
-        run: docker-compose build
+        run: docker compose build
