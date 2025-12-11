@@ -30,6 +30,13 @@ public class Recipe {
     @Column(columnDefinition = "DOUBLE PRECISION DEFAULT 0.0")
     private Double price;
 
+    private String area; // Cuisine type e.g. "Italian", "American"
+
+    @Column(columnDefinition = "DOUBLE PRECISION DEFAULT 0.0")
+    private Double averageRating = 0.0;
+
+    private Integer ratingCount = 0;
+
     @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<RecipeIngredient> recipeIngredients = new HashSet<>();
 
@@ -100,6 +107,30 @@ public class Recipe {
 
     public void setPrice(Double price) {
         this.price = price;
+    }
+
+    public String getArea() {
+        return area;
+    }
+
+    public void setArea(String area) {
+        this.area = area;
+    }
+
+    public Double getAverageRating() {
+        return averageRating;
+    }
+
+    public void setAverageRating(Double averageRating) {
+        this.averageRating = averageRating;
+    }
+
+    public Integer getRatingCount() {
+        return ratingCount;
+    }
+
+    public void setRatingCount(Integer ratingCount) {
+        this.ratingCount = ratingCount;
     }
 
     public Set<RecipeIngredient> getRecipeIngredients() {

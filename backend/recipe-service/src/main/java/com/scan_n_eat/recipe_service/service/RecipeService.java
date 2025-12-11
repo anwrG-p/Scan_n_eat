@@ -19,12 +19,15 @@ public class RecipeService {
 
     private final RecipeRepository recipeRepository;
     private final com.scan_n_eat.recipe_service.repository.SavedRecipeRepository savedRecipeRepository;
+    private final com.scan_n_eat.recipe_service.repository.RatingRepository ratingRepository;
 
     @Autowired
     public RecipeService(RecipeRepository recipeRepository,
-            com.scan_n_eat.recipe_service.repository.SavedRecipeRepository savedRecipeRepository) {
+            com.scan_n_eat.recipe_service.repository.SavedRecipeRepository savedRecipeRepository,
+            com.scan_n_eat.recipe_service.repository.RatingRepository ratingRepository) {
         this.recipeRepository = recipeRepository;
         this.savedRecipeRepository = savedRecipeRepository;
+        this.ratingRepository = ratingRepository;
     }
 
     // Get all recipes
@@ -163,6 +166,10 @@ public class RecipeService {
                 recipeIngredients,
                 recipe.getPrice());
 
+        dto.setArea(recipe.getArea());
+        dto.setAverageRating(recipe.getAverageRating());
+        dto.setRatingCount(recipe.getRatingCount());
+
         // We can set ingredientIds using the setter if needed, or rely on
         // recipeIngredients
         dto.setIngredientIds(ingredientIds);
@@ -236,5 +243,59 @@ public class RecipeService {
         return trendingRecipes.stream()
                 .map(this::convertToDTO)
                 .collect(java.util.stream.Collectors.toList());
+    }
+
+    // Rate a recipe
+    @Transactional
+    public RecipeDTO rateRecipe(Long userId, UUID recipeId, Integer ratingValue) {
+        if (ratingValue < 1 || ratingValue > 5) {
+            throw new IllegalArgumentException("Rating must be between 1 and 5");
+        }
+
+        Recipe recipe = recipeRepository.findById(recipeId)
+                .orElseThrow(() -> new RuntimeException("Recipe not found with id: " + recipeId));
+
+        com.scan_n_eat.recipe_service.entity.Rating existingRating = ratingRepository
+                .findByUserIdAndRecipeId(userId, recipeId)
+                .orElse(null);
+
+        if (existingRating != null) {
+            existingRating.setRating(ratingValue);
+            ratingRepository.save(existingRating);
+        } else {
+            com.scan_n_eat.recipe_service.entity.Rating newRating = new com.scan_n_eat.recipe_service.entity.Rating();
+            newRating.setUserId(userId);
+            newRating.setRecipeId(recipeId);
+            newRating.setRating(ratingValue);
+            ratingRepository.save(newRating);
+        }
+
+        // Recalculate average
+        List<com.scan_n_eat.recipe_service.entity.Rating> allRatings = ratingRepository.findByRecipeId(recipeId);
+        double avg = allRatings.stream().mapToInt(com.scan_n_eat.recipe_service.entity.Rating::getRating).average().orElse(0.0);
+        
+        recipe.setAverageRating(avg);
+        recipe.setRatingCount(allRatings.size());
+        
+        Recipe saved = recipeRepository.save(recipe);
+        return convertToDTO(saved);
+    }
+
+    // Advanced Filter
+    public List<RecipeDTO> filterRecipes(String area, Double maxPrice) {
+        List<Recipe> recipes;
+        if (area != null && !area.isEmpty() && maxPrice != null) {
+            recipes = recipeRepository.findByAreaContainingIgnoreCaseAndPriceLessThanEqual(area, maxPrice);
+        } else if (area != null && !area.isEmpty()) {
+            recipes = recipeRepository.findByAreaContainingIgnoreCase(area);
+        } else if (maxPrice != null) {
+            recipes = recipeRepository.findByPriceLessThanEqual(maxPrice);
+        } else {
+            recipes = recipeRepository.findAll();
+        }
+        
+        return recipes.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 }

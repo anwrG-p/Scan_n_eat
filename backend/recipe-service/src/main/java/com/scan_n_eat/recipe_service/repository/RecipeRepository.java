@@ -15,6 +15,15 @@ public interface RecipeRepository extends JpaRepository<Recipe, UUID> {
     // Find recipes by title (case-insensitive, partial match)
     List<Recipe> findByTitleContainingIgnoreCase(String title);
 
+    // Find recipes by area (case-insensitive)
+    List<Recipe> findByAreaContainingIgnoreCase(String area);
+
+    // Find recipes by max price
+    List<Recipe> findByPriceLessThanEqual(Double price);
+
+    // Filter by both
+    List<Recipe> findByAreaContainingIgnoreCaseAndPriceLessThanEqual(String area, Double price);
+
     // Find recipes that can be made with given ingredient IDs
     // This finds recipes where ALL required ingredients are in the provided list
     @Query("SELECT DISTINCT r FROM Recipe r " +

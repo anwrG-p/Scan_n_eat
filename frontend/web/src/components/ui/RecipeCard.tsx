@@ -9,6 +9,9 @@ export interface RecipeCardProps {
     difficulty: 'Easy' | 'Medium' | 'Hard';
     time: string;
     calories: string;
+    area?: string;
+    averageRating?: number;
+    ratingCount?: number;
 }
 
 export const RecipeCard: React.FC<RecipeCardProps> = ({
@@ -17,7 +20,10 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
     imageUrl,
     difficulty,
     time,
-    calories
+    calories,
+    area,
+    averageRating,
+    ratingCount
 }) => {
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all flex mb-4 h-32 md:h-40">
@@ -28,12 +34,17 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
                     alt={title}
                     className="w-full h-full object-cover"
                 />
-                <div className="absolute top-2 left-2">
+                <div className="absolute top-2 left-2 flex gap-1">
                     <span className={`px-2 py-1 rounded-full text-xs font-semibold text-white ${difficulty === 'Easy' ? 'bg-green-500' :
                         difficulty === 'Medium' ? 'bg-yellow-500' : 'bg-red-500'
                         }`}>
                         {difficulty}
                     </span>
+                    {area && (
+                        <span className="px-2 py-1 rounded-full text-xs font-semibold text-white bg-blue-500">
+                            {area}
+                        </span>
+                    )}
                 </div>
             </div>
 
@@ -44,15 +55,26 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
                     <p className="text-gray-500 text-sm line-clamp-2 mt-1">{description}</p>
                 </div>
 
-                <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
-                    <div className="flex items-center">
-                        <Clock className="w-3 h-3 mr-1" />
-                        {time}
+                <div className="flex flex-col gap-1 mt-2 text-xs text-gray-400">
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center">
+                            <Clock className="w-3 h-3 mr-1" />
+                            {time}
+                        </div>
+                        <div className="flex items-center">
+                            <Flame className="w-3 h-3 mr-1" />
+                            {calories}
+                        </div>
                     </div>
-                    <div className="flex items-center">
-                        <Flame className="w-3 h-3 mr-1" />
-                        {calories}
-                    </div>
+                    {averageRating !== undefined && (
+                        <div className="flex items-center text-yellow-500">
+                            {'★'.repeat(Math.round(averageRating))}
+                            <span className="text-gray-300 ml-1">
+                                {'★'.repeat(5 - Math.round(averageRating))}
+                            </span>
+                            <span className="text-gray-400 ml-1">({ratingCount || 0})</span>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

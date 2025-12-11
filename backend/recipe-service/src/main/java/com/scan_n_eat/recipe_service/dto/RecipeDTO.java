@@ -13,6 +13,9 @@ public class RecipeDTO {
     private String imageUrl;
     private List<Integer> ingredientIds;
     private Double price;
+    private String area;
+    private Double averageRating;
+    private Integer ratingCount;
     private List<RecipeIngredientDTO> recipeIngredients;
 
     // Constructors
@@ -102,5 +105,29 @@ public class RecipeDTO {
 
     public void setRecipeIngredients(List<RecipeIngredientDTO> recipeIngredients) {
         this.recipeIngredients = recipeIngredients;
+    }
+
+    public String getArea() {
+        return area;
+    }
+
+    public void setArea(String area) {
+        this.area = area;
+    }
+
+    public Double getAverageRating() {
+        return averageRating;
+    }
+
+    public void setAverageRating(Double averageRating) {
+        this.averageRating = averageRating;
+    }
+
+    public Integer getRatingCount() {
+        return ratingCount;
+    }
+
+    public void setRatingCount(Integer ratingCount) {
+        this.ratingCount = ratingCount;
     }
 }

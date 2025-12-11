@@ -191,4 +191,28 @@ public class RecipeController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+    // POST /api/recipes/{id}/rate
+    @PostMapping("/{id}/rate")
+    public ResponseEntity<RecipeDTO> rateRecipe(
+            @PathVariable UUID id,
+            @RequestBody Integer rating,
+            @RequestHeader("X-User-Id") Long userId) {
+        try {
+            RecipeDTO updated = recipeService.rateRecipe(userId, id, rating);
+            return ResponseEntity.ok(updated);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    // GET /api/recipes/filter?area=Italian&maxPrice=50
+    @GetMapping("/filter")
+    public ResponseEntity<List<RecipeDTO>> filterRecipes(
+            @RequestParam(required = false) String area,
+            @RequestParam(required = false) Double maxPrice) {
+        List<RecipeDTO> recipes = recipeService.filterRecipes(area, maxPrice);
+        return ResponseEntity.ok(recipes);
+    }
 }
