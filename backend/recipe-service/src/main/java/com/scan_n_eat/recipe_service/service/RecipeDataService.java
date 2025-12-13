@@ -24,38 +24,39 @@ public class RecipeDataService {
     }
 
     /**
-     * Fetch recipes from TheMealDB API and save to database
-     * This is a simple implementation - you can expand it
+     * Fetch random recipes from TheMealDB API daily
+     * Runs every day at 2:00 AM (server time)
      */
+    @org.springframework.scheduling.annotation.Scheduled(cron = "0 0 2 * * ?")
     @Transactional
     public void populateRecipesFromAPI() {
-        // Example: Fetch recipes from TheMealDB
-        String apiUrl = "https://www.themealdb.com/api/json/v1/1/search.php?s=";
+        populateRandomRecipes(10); // Fetch 10 random recipes daily
+    }
 
-        // You can search for different terms or loop through categories
-        String[] searchTerms = { "pasta", "chicken", "rice", "beef", "fish" };
+    /**
+     * Manually trigger population (e.g. from Controller)
+     */
+    @Transactional
+    public void populateRandomRecipes(int count) {
+        String randomUrl = "https://www.themealdb.com/api/json/v1/1/random.php";
 
-        for (String term : searchTerms) {
+        for (int i = 0; i < count; i++) {
             try {
-                String url = apiUrl + term;
-                Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+                Map<String, Object> response = restTemplate.getForObject(randomUrl, Map.class);
 
                 if (response != null && response.containsKey("meals")) {
                     List<Map<String, Object>> meals = (List<Map<String, Object>>) response.get("meals");
 
-                    if (meals != null) {
-                        for (Map<String, Object> meal : meals) {
-                            saveRecipeFromMeal(meal);
-                        }
+                    if (meals != null && !meals.isEmpty()) {
+                        saveRecipeFromMeal(meals.get(0));
                     }
                 }
 
                 // Be nice to the API - add delay
-                Thread.sleep(1000);
+                Thread.sleep(500);
 
             } catch (Exception e) {
-                System.err.println("Error fetching recipes for term: " + term);
-                e.printStackTrace();
+                System.err.println("Error fetching random recipe: " + e.getMessage());
             }
         }
     }

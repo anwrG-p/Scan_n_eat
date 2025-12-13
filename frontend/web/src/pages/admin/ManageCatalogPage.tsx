@@ -7,10 +7,10 @@ import { Edit, Trash2, Plus } from 'lucide-react';
 import { apiClient } from '../../api/client';
 
 export const ManageCatalogPage: React.FC = () => {
-    const { dishes } = useCatalogStore();
-    // TODO: Add addDish, updateDish, deleteDish to store
+    const { dishes, fetchDishes } = useCatalogStore();
     const [showForm, setShowForm] = useState(false);
     const [isPopulating, setIsPopulating] = useState(false);
+    const [editingId, setEditingId] = useState<string | null>(null);
 
     const handlePopulate = async () => {
         if (!window.confirm("This will fetch recipes from the external API. Continue?")) return;
@@ -18,7 +18,7 @@ export const ManageCatalogPage: React.FC = () => {
         try {
             await apiClient.post('/recipes/populate');
             alert('Catalog populated successfully!');
-            // TODO: Refresh catalog
+            fetchDishes();
         } catch (error) {
             console.error('Failed to populate:', error);
             alert('Failed to populate catalog.');
@@ -37,27 +37,81 @@ export const ManageCatalogPage: React.FC = () => {
         active: true
     });
 
+    const resetForm = () => {
+        setNewDish({
+            title: '',
+            description: '',
+            price: '0.00',
+            imageUrl: '',
+            instructions: '',
+            prepTime: '20 mins',
+            active: true
+        });
+        setEditingId(null);
+        setShowForm(false);
+    };
+
     const handleAddDish = async () => {
         try {
-            await apiClient.post('/recipes', {
+            const payload = {
                 ...newDish,
                 price: parseFloat(newDish.price)
-            });
-            alert('Dish added successfully!');
-            setShowForm(false);
+            };
+
+            if (editingId) {
+                await apiClient.put(`/recipes/${editingId}`, payload);
+                alert('Dish updated successfully!');
+            } else {
+                await apiClient.post('/recipes', payload);
+                alert('Dish added successfully!');
+            }
+            
+            resetForm();
+            fetchDishes();
+        } catch (error) {
+            console.error('Failed to save dish:', error);
+            alert('Failed to save dish');
+        }
+    };
+
+    const handleEdit = async (id: string) => {
+        try {
+            // Fetch full recipe details
+            // We use 'any' temporarily as we need to conform to the form state structure
+            const { data } = await apiClient.get<any>(`/recipes/${id}`);
+            
             setNewDish({
-                title: '',
-                description: '',
-                price: '0.00',
-                imageUrl: '',
-                instructions: '',
-                prepTime: '20 mins',
+                title: data.title,
+                description: data.instructions?.substring(0, 100) || '', // Simple description from instructions
+                price: data.price ? data.price.toString() : '0.00',
+                imageUrl: data.imageUrl || '',
+                instructions: data.instructions || '',
+                prepTime: data.prepTime || '20 mins',
                 active: true
             });
-            // Ideally refresh catalog here
+            
+            setEditingId(id);
+            setShowForm(true);
+            
+            // Scroll to form
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
         } catch (error) {
-            console.error('Failed to add dish:', error);
-            alert('Failed to add dish');
+            console.error("Failed to fetch recipe for editing", error);
+            alert("Could not load recipe details");
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!window.confirm("Are you sure you want to delete this dish?")) return;
+        
+        try {
+            await apiClient.delete(`/recipes/${id}`);
+            alert('Dish deleted successfully');
+            fetchDishes();
+        } catch (error) {
+            console.error("Failed to delete dish", error);
+            alert("Failed to delete dish");
         }
     };
 
@@ -69,7 +123,7 @@ export const ManageCatalogPage: React.FC = () => {
                     <Button variant="secondary" onClick={handlePopulate} disabled={isPopulating}>
                         {isPopulating ? 'Populating...' : 'Populate Catalog'}
                     </Button>
-                    <Button onClick={() => setShowForm(!showForm)}>
+                    <Button onClick={() => { resetForm(); setShowForm(!showForm); }}>
                         <Plus className="w-4 h-4 mr-2" /> Add New Dish
                     </Button>
                 </div>
@@ -77,7 +131,7 @@ export const ManageCatalogPage: React.FC = () => {
 
             {showForm && (
                 <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                    <h2 className="text-lg font-bold mb-4">Add New Dish</h2>
+                    <h2 className="text-lg font-bold mb-4">{editingId ? 'Edit Dish' : 'Add New Dish'}</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <Input 
                             label="Dish Name" 
@@ -120,7 +174,7 @@ export const ManageCatalogPage: React.FC = () => {
                     </div>
                     <div className="flex justify-end space-x-2">
                         <Button variant="secondary" onClick={() => setShowForm(false)}>Cancel</Button>
-                        <Button onClick={handleAddDish}>Save Dish</Button>
+                        <Button onClick={handleAddDish}>{editingId ? 'Update Dish' : 'Save Dish'}</Button>
                     </div>
                 </div>
             )}
@@ -154,10 +208,16 @@ export const ManageCatalogPage: React.FC = () => {
                                         {dish.ingredients.length} items
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button className="text-blue-600 hover:text-blue-900 mr-4">
+                                        <button 
+                                            onClick={() => handleEdit(dish.id)}
+                                            className="text-blue-600 hover:text-blue-900 mr-4"
+                                        >
                                             <Edit className="w-4 h-4" />
                                         </button>
-                                        <button className="text-red-600 hover:text-red-900">
+                                        <button 
+                                            onClick={() => handleDelete(dish.id)}
+                                            className="text-red-600 hover:text-red-900"
+                                        >
                                             <Trash2 className="w-4 h-4" />
                                         </button>
                                     </td>
